@@ -2,6 +2,8 @@ const canvas = document.getElementById('canvas')
 // const pantsPocket = documnet.getElementById('pants-pocket')
 const context = canvas.getContext('2d')
 
+const puzzleAnswer = "PANTS"
+
 let drawing = false
 let brushType = 'rectangle'
 let color = 'black'
@@ -173,7 +175,7 @@ function sleep(ms) {
 function getPuzzleData() {
   // TODO: get these values from api
   const clue = "Thirsty Doggo's Emissions"
-  const answer = "PANTS"
+  const answer = puzzleAnswer
   return { clue, answer }
 }
 
@@ -217,10 +219,10 @@ function collisionDetected() {
 }
 
 function getIdealPathPixels() {
-
   // start of waistline to first filled pixel's X coordinate
   let index = parseInt(Object.keys(allCollisionXs)[0])
   let lowestCollisionX = index
+  let highestCollisionX = allCollisionXs.length - 1
   for(let i = leftEdge; i < lowestCollisionX; i++) {
     idealPathPixels.push({x: i, y: waistline, compare: 'down'})
   }
@@ -235,22 +237,31 @@ function getIdealPathPixels() {
     // determine direction from this pixel to next
 
     // jump down
-    if(currentY === waistline && nextY - currentY > 5) {
+    if(nextY - currentY > 5) {
       // fill all y's from here to Y value of nextX
       for (let h = 0; h < nextY - currentY; h++) {
         idealPathPixels.push({x: currentX, y: currentY + h, compare: 'left'})
       }
+      // currentX = nextX
+      currentY = allCollisionXs[currentX]
+      nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
+      nextY = allCollisionXs[nextX]
+      paintItRed()
     }
-    paintItRed()
 
     // step down and right
-    if(nextY - currentY < 5 && nextY - currentY > 0) {
+    if(nextY - currentY < 7 && nextY - currentY > 0) {
       // fill all y's from here to Y value of nextX
       for (let h = 0; h < nextY - currentY; h++) {
         idealPathPixels.push({x: currentX, y: currentY + h, compare: 'average'})
       }
+      currentX = nextX
+      currentY = allCollisionXs[currentX]
+      nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
+      nextY = allCollisionXs[nextX]
+  
+      paintItRed()
     }
-    paintItRed()
 
     // straight right
     if(nextY - currentY === 0) {
@@ -258,50 +269,73 @@ function getIdealPathPixels() {
       for (let h = 0; h < nextX - currentX; h++) {
         idealPathPixels.push({x: currentX + h, y: currentY, compare: 'down'})
       }
+      currentX = nextX
+      // currentY = allCollisionXs[currentX]
+      nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
+      nextY = allCollisionXs[nextX] || waistline
+  
+      paintItRed()
     }
-    paintItRed()
 
     // step up and right
-    if(currentY - nextY < 5 &&
-       currentY - nextY > 0) {
+    if(Math.abs(currentY - nextY) < 7 && Math.abs(currentY - nextY > 0)) {
       // fill all y's from here to Y value of nextX
       for (let h = 0; h < nextY - currentY; h++) {
         idealPathPixels.push({x: currentX, y: currentY + h, compare: 'average'})
       }
+      currentX = nextX
+      currentY = allCollisionXs[currentX]
+      nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
+      nextY = allCollisionXs[nextX] || waistline
+  
+      paintItRed()
     }
-    paintItRed()
 
     // jump up
-    if(nextY - currentY > 5) {
+    if(currentY - nextY > 7) {
       // fill all y's from here to Y value of nextX
-      for (let h = 0; h < nextY - currentY; h++) {
-        idealPathPixels.push({x: currentX, y: currentY + h, compare: 'right'})
+      for (let h = 0; h < currentY - nextY; h++) {
+        idealPathPixels.push({x: currentX, y: currentY - h, compare: 'right'})
       }
+      // currentX = nextX
+      currentY = allCollisionXs[currentX]
+      nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
+      nextY = allCollisionXs[nextX]
+  
+      paintItRed()
     }
-    paintItRed()
     
     // move to next pixel chunk
-    if (nextX - currentX > 1) {
+    if (nextX - currentX > 1 || isNaN(nextX)) {
       // fill up Y's if necessary
       if (currentY > waistline) {
         for (let k = 0; k < currentY - waistline; k++) {
           idealPathPixels.push({x: currentX, y: currentY - k, compare: 'right'})
         }
+      currentY = waistline
+      nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
+      nextY = allCollisionXs[nextX]
+      paintItRed()
       }
-    paintItRed()
 
       // fill waistline to next letter chunk
       for (let m = 0; m < nextX - currentX; m++) {
         idealPathPixels.push({x: currentX + m, y: waistline, compare: 'down'})
       }
+      currentX = nextX
+      currentY = waistline
+      nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
+      nextY = allCollisionXs[nextX]
+  
+      paintItRed()
     }
-    paintItRed()
-
-    currentX = nextX
-    currentY = allCollisionXs[currentX]
-    nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
-    nextY = allCollisionXs[nextX]
   }
+
+  for(let i = highestCollisionX; i < rightEdge; i++) {
+    idealPathPixels.push({x: i, y: waistline, compare: 'down'})
+  }
+  paintItRed()
+  console.log(idealPathPixels)
 }
 
 function paintItRed() {
