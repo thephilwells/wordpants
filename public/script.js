@@ -5,6 +5,7 @@ const context = canvas.getContext('2d')
 const puzzleAnswer = "PANTS"
 
 let drawing = false
+let score
 let brushType = 'rectangle'
 let color = 'black'
 let size = 5
@@ -152,6 +153,7 @@ async function pullUpPants() {
   await sleep(0)
   highestPixelValue--
   if (highestPixelValue <= waistline) {
+    score = calculateCloseness()
     alert('WAISTLINE BREACHED!!')
     return
   } else if (collisionDetected()) {
@@ -224,7 +226,7 @@ function getIdealPathPixels() {
   let lowestCollisionX = index
   let highestCollisionX = allCollisionXs.length - 1
   for(let i = leftEdge; i < lowestCollisionX; i++) {
-    idealPathPixels.push({x: i, y: waistline, compare: 'down'})
+    idealPathPixels.push({x: i, y: waistline})
   }
   paintItRed()
 
@@ -240,7 +242,7 @@ function getIdealPathPixels() {
     if(nextY - currentY > 5) {
       // fill all y's from here to Y value of nextX
       for (let h = 0; h < nextY - currentY; h++) {
-        idealPathPixels.push({x: currentX, y: currentY + h, compare: 'left'})
+        idealPathPixels.push({x: currentX, y: currentY + h})
       }
       // currentX = nextX
       currentY = allCollisionXs[currentX]
@@ -253,7 +255,7 @@ function getIdealPathPixels() {
     if(nextY - currentY < 7 && nextY - currentY > 0) {
       // fill all y's from here to Y value of nextX
       for (let h = 0; h < nextY - currentY; h++) {
-        idealPathPixels.push({x: currentX, y: currentY + h, compare: 'average'})
+        idealPathPixels.push({x: currentX, y: currentY + h})
       }
       currentX = nextX
       currentY = allCollisionXs[currentX]
@@ -267,7 +269,7 @@ function getIdealPathPixels() {
     if(nextY - currentY === 0) {
       // fill all x's from here to x value of nextX
       for (let h = 0; h < nextX - currentX; h++) {
-        idealPathPixels.push({x: currentX + h, y: currentY, compare: 'down'})
+        idealPathPixels.push({x: currentX + h, y: currentY})
       }
       currentX = nextX
       // currentY = allCollisionXs[currentX]
@@ -281,7 +283,7 @@ function getIdealPathPixels() {
     if(Math.abs(currentY - nextY) < 7 && Math.abs(currentY - nextY > 0)) {
       // fill all y's from here to Y value of nextX
       for (let h = 0; h < nextY - currentY; h++) {
-        idealPathPixels.push({x: currentX, y: currentY + h, compare: 'average'})
+        idealPathPixels.push({x: currentX, y: currentY + h})
       }
       currentX = nextX
       currentY = allCollisionXs[currentX]
@@ -295,7 +297,7 @@ function getIdealPathPixels() {
     if(currentY - nextY > 7) {
       // fill all y's from here to Y value of nextX
       for (let h = 0; h < currentY - nextY; h++) {
-        idealPathPixels.push({x: currentX, y: currentY - h, compare: 'right'})
+        idealPathPixels.push({x: currentX, y: currentY - h})
       }
       // currentX = nextX
       currentY = allCollisionXs[currentX]
@@ -310,7 +312,7 @@ function getIdealPathPixels() {
       // fill up Y's if necessary
       if (currentY > waistline) {
         for (let k = 0; k < currentY - waistline; k++) {
-          idealPathPixels.push({x: currentX, y: currentY - k, compare: 'right'})
+          idealPathPixels.push({x: currentX, y: currentY - k})
         }
       currentY = waistline
       nextX = parseInt(Object.keys(allCollisionXs)[b + 1])
@@ -320,7 +322,7 @@ function getIdealPathPixels() {
 
       // fill waistline to next letter chunk
       for (let m = 0; m < nextX - currentX; m++) {
-        idealPathPixels.push({x: currentX + m, y: waistline, compare: 'down'})
+        idealPathPixels.push({x: currentX + m, y: waistline})
       }
       currentX = nextX
       currentY = waistline
@@ -332,10 +334,37 @@ function getIdealPathPixels() {
   }
 
   for(let i = highestCollisionX; i < rightEdge; i++) {
-    idealPathPixels.push({x: i, y: waistline, compare: 'down'})
+    idealPathPixels.push({x: i, y: waistline})
   }
   paintItRed()
   console.log(idealPathPixels)
+}
+
+function calculateCloseness() {
+  const distances = []
+
+// chop out-of-bounds squigglePixels
+squigglePixels = squigglePixels.filter(pixel => pixel.x > leftEdge && pixel.x < rightEdge)
+
+  let squiggleLength = squigglePixels.length
+  let idealLength = idealPathPixels.length
+  const diff = Math.abs(idealLength - squiggleLength)
+  if (idealLength > squiggleLength) {
+    for (let i = 0; i < diff; i++) {
+      idealPathPixels.splice(Math.random() * idealPathPixels.length, 1)
+    }
+  }
+  if (squiggleLength > idealLength) {
+    for (let i = 0; i < diff; i ++) {
+      squigglePixels.splice(Math.random() * squigglePixels.length, 1)
+    }
+  }
+  console.log(`!!!!!!!! - arrays should be same size: ${idealPathPixels.length} v. ${squigglePixels.length}`)
+  for (let j = 0; j < squigglePixels.length; j++) {
+    distances.push(Math.sqrt(Math.pow((squigglePixels[j].x - idealPathPixels[j].x), 2) + Math.pow((squigglePixels[j].y - idealPathPixels[j].y), 2)))
+  }
+  const avgDistance = (distances.reduce((sum, x) => sum + x) / distances.length)
+  console.log(`!!!!!!!! - average distance: ${avgDistance}`)
 }
 
 function paintItRed() {
