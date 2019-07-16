@@ -43,6 +43,22 @@ context.lineTo(600, waistline - 3)
 context.strokeStyle = "blue"
 context.stroke()
 
+// draw start area
+context.beginPath()
+context.setLineDash([5, 15])
+context.moveTo(25, 0)
+context.lineTo(25, 600)
+context.strokeStyle = "green"
+context.stroke()
+
+// draw end area
+context.beginPath()
+context.setLineDash([5, 15])
+context.moveTo(575, 0)
+context.lineTo(575, 600)
+context.strokeStyle = "green"
+context.stroke()
+
 window.addEventListener(
   'click',
   function (event) {
@@ -154,10 +170,10 @@ async function pullUpPants() {
   highestPixelValue--
   if (highestPixelValue <= waistline) {
     score = calculateCloseness()
-    alert('WAISTLINE BREACHED!!')
+    alert(`TIGHT PANTS!! AVERAGE CLOSENESS: ${score}`)
     return
   } else if (collisionDetected()) {
-    alert('COLLISION DETECTED!!')
+    alert('COLLISION DETECTED!! REFRESH AND TRY AGAIN!!')
   }
   else {
     pullUpPants()
@@ -365,10 +381,11 @@ squigglePixels = squigglePixels.filter(pixel => pixel.x > leftEdge && pixel.x < 
   }
   const avgDistance = (distances.reduce((sum, x) => sum + x) / distances.length)
   console.log(`!!!!!!!! - average distance: ${avgDistance}`)
+  return avgDistance
 }
 
 function paintItRed() {
-  context.fillStyle = "red"
-  idealPathPixels.forEach(px => { context.fillRect(px.x, px.y, 1, 1) })
-  context.fillStyle = "black"
+  // context.fillStyle = "red"
+  // idealPathPixels.forEach(px => { context.fillRect(px.x, px.y, 1, 1) })
+  // context.fillStyle = "black"
 }
