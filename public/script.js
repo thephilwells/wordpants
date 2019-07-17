@@ -88,9 +88,43 @@ window.addEventListener(
   false
 )
 
+// Set up touch events for mobile, etc
+canvas.addEventListener(
+  'touchstart',
+  function (event) {
+    event.preventDefault()
+    if (event.target === canvas) {
+      drawing = true
+      handlePenDown(...canvasXYFromEvent(event))
+    }
+  }
+)
+
+canvas.addEventListener(
+  'touchend',
+  function (event) {
+    event.preventDefault()
+    if (drawing === true) {
+      drawing = false
+      handlePenUp(...canvasXYFromEvent(event))
+    }
+  }
+)
+
+canvas.addEventListener(
+  'touchmove',
+  function (event) {
+    event.preventDefault()
+    if (drawing === true) {
+      handlePenMove(...canvasXYFromEvent(event))
+    }
+  }
+)
+
 window.addEventListener(
   'mousedown',
   function (event) {
+    event.preventDefault()
     if (event.target === canvas) {
       drawing = true
       handlePenDown(...canvasXYFromEvent(event))
@@ -99,58 +133,10 @@ window.addEventListener(
   false
 )
 
-// Set up touch events for mobile, etc
-canvas.addEventListener(
-  'touchstart',
-  function (e) {
-    e.preventDefault()
-    mousePos = getTouchPos(canvas, e)
-    var touch = e.touches[0]
-    var mouseEvent = new MouseEvent('mousedown', {
-      clientX: touch.clientX,
-      clientY: touch.clientY
-    })
-    canvas.dispatchEvent(mouseEvent)
-  },
-  false
-)
-
-canvas.addEventListener(
-  'touchend',
-  function (e) {
-    e.preventDefault()
-    var mouseEvent = new MouseEvent('mouseup', {})
-    canvas.dispatchEvent(mouseEvent)
-  },
-  false
-)
-
-canvas.addEventListener(
-  'touchmove',
-  function (e) {
-    e.preventDefault()
-    var touch = e.touches[0]
-    var mouseEvent = new MouseEvent('mousemove', {
-      clientX: touch.clientX,
-      clientY: touch.clientY
-    })
-    canvas.dispatchEvent(mouseEvent)
-  },
-  false
-)
-
-// Get the position of a touch relative to the canvas
-function getTouchPos (canvasDom, touchEvent) {
-  var rect = canvasDom.getBoundingClientRect()
-  return {
-    x: touchEvent.touches[0].clientX - rect.left,
-    y: touchEvent.touches[0].clientY - rect.top
-  }
-}
-
 window.addEventListener(
   'mousemove',
   function (event) {
+    event.preventDefault()
     if (drawing === true) {
       handlePenMove(...canvasXYFromEvent(event))
     }
@@ -161,6 +147,7 @@ window.addEventListener(
 window.addEventListener(
   'mouseup',
   function (event) {
+    event.preventDefault()
     if (drawing === true) {
       drawing = false
       handlePenUp(...canvasXYFromEvent(event))
@@ -169,23 +156,11 @@ window.addEventListener(
   false
 )
 
-window.addEventListener(
-  'change',
-  function (event) {
-    brushType = event.target.form.brush.value
-    color = event.target.form.color.value
-    size = parseFloat(event.target.form.size.value)
-    console.log('Changed brush type, color, or size', brushType, color, size)
-
-    // TODO, use 'color' here to change the brush color
-    // TIP, look up 'fillStyle' on mdn
-  },
-  false
-)
-
 function canvasXYFromEvent (event) {
   const { x, y } = canvas.getBoundingClientRect()
-  return [event.clientX - x, event.clientY - y]
+  const clientX = event.clientX || event.targetTouches[0] && event.targetTouches[0].clientX
+  const clientY = event.clientY || event.targetTouches[0] && event.targetTouches[0].clientY
+  return [clientX - x, clientY - y]
 }
 
 // Prevent scrolling when touching the canvas
