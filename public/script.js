@@ -18,6 +18,7 @@ let letterX = 50
 let allCollisionXs = []
 let leftEdge = 25
 let rightEdge = 600-25
+let halfway = 300
 
 // draw answer
 context.strokeStyle = "black"
@@ -27,6 +28,11 @@ puzzleData.answer.split('').forEach(letter => {
   context.fillText(letter, letterX, 125, 100)
   letterX += 100
 })
+
+context.strokeStyle = "light gray"
+context.font = '12px Arial'
+context.textAlign = "center"
+context.fillText('DRAW BELOW THIS LINE', halfway, halfway)
 
 // get letter pixels below waistline
 let collisionPixels = getCollisionPixels(puzzleData.answer)
@@ -59,6 +65,14 @@ context.lineTo(575, 600)
 context.strokeStyle = "green"
 context.stroke()
 
+// draw drawing area boundary
+context.beginPath()
+context.setLineDash([5, 15])
+context.moveTo(0, halfway)
+context.lineTo(600, halfway)
+context.strokeStyle = "gray"
+context.stroke()
+
 window.addEventListener(
   'click',
   function (event) {
@@ -79,6 +93,41 @@ window.addEventListener(
   },
   false
 )
+
+// Set up touch events for mobile, etc
+canvas.addEventListener("touchstart", function (e) {
+  e.preventDefault()
+  mousePos = getTouchPos(canvas, e);
+  var touch = e.touches[0];
+  var mouseEvent = new MouseEvent("mousedown", {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  canvas.dispatchEvent(mouseEvent);
+  }, false);
+  canvas.addEventListener("touchend", function (e) {
+    e.preventDefault()
+    var mouseEvent = new MouseEvent("mouseup", {});
+    canvas.dispatchEvent(mouseEvent);
+  }, false);
+  canvas.addEventListener("touchmove", function (e) {
+    e.preventDefault()
+    var touch = e.touches[0];
+    var mouseEvent = new MouseEvent("mousemove", {
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    });
+    canvas.dispatchEvent(mouseEvent);
+  }, false);
+
+// Get the position of a touch relative to the canvas
+function getTouchPos(canvasDom, touchEvent) {
+  var rect = canvasDom.getBoundingClientRect();
+  return {
+    x: touchEvent.touches[0].clientX - rect.left,
+    y: touchEvent.touches[0].clientY - rect.top
+  };
+}
 
 window.addEventListener(
   'mousemove',
@@ -123,17 +172,49 @@ function canvasXYFromEvent(event) {
   ]
 }
 
+// Prevent scrolling when touching the canvas
+document.body.addEventListener("touchstart", function (e) {
+  if (e.target == canvas) {
+    e.preventDefault();
+  }
+}, false);
+document.body.addEventListener("touchend", function (e) {
+  if (e.target == canvas) {
+    e.preventDefault();
+  }
+}, false);
+document.body.addEventListener("touchmove", function (e) {
+  if (e.target == canvas) {
+    e.preventDefault();
+  }
+}, false);
+
+// function handleTouchStart(x, y) {
+
+// }
+
+// function handleTouchMove(x, y) {
+
+// }
+
+// function handleTouchEnd(x, y) {
+
+// }
+
 // This code runs when the user presses down the mouse on the canvas (starts drawing)
 function handlePenDown(x, y) {
-  placeRectangle(x, y)
-  squigglePixels.push({ x, y })
+  if (y >= halfway) {
+    placeRectangle(x, y)
+    squigglePixels.push({ x, y })
+  }
 }
-
 // This code runs when the user moves their mouse around while drawing
 function handlePenMove(x, y) {
-  console.log('drawing and moving', x, y)
-  placeRectangle(x, y)
-  squigglePixels.push({ x, y })
+  if (y >= halfway) {
+    console.log('drawing and moving', x, y)
+    placeRectangle(x, y)
+    squigglePixels.push({ x, y })
+  }
 }
 
 // This code runs when the user lift up the mouse while drawing (i.e. stops drawing)
@@ -144,9 +225,13 @@ function handlePenUp(x, y) {
 
 function handleSubmit() {
   console.log('submitted')
-  context.clearRect(0, highestPixelValue, 600, 600)
-  new Audio("whistleup.wav").play()
-  pullUpPants()
+  if (checkForEnoughSquiggle()) {
+    context.clearRect(0, highestPixelValue, 600, 600)
+    new Audio("whistleup.wav").play()
+    pullUpPants()
+  } else {
+    alert('NOT ENOUGH PANTS - FILL IN THE GAPS')
+  }
   // context.clearRect(0, 0, canvas.width, canvas.height)
 }
 
@@ -388,4 +473,14 @@ function paintItRed() {
   // context.fillStyle = "red"
   // idealPathPixels.forEach(px => { context.fillRect(px.x, px.y, 1, 1) })
   // context.fillStyle = "black"
+}
+
+function checkForEnoughSquiggle() {
+  let columnsInSquiggle = 0
+  for(let i = leftEdge; i < rightEdge; i++) {
+    if (squigglePixels.filter(pixel => pixel.x === i).length > 0) {
+      columnsInSquiggle += 1
+    }
+  }
+  return columnsInSquiggle / (rightEdge - leftEdge) > 0.50 ? true : false
 }
