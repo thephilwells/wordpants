@@ -227,7 +227,7 @@ function handlePenDown (x, y) {
 // This code runs when the user moves their mouse around while drawing
 function handlePenMove (x, y) {
   if (y >= halfway) {
-    console.log('drawing and moving', x, y)
+    // console.log('drawing and moving', x, y)
     placeRectangle(x, y)
     squigglePixels.push({ x, y })
   }
@@ -235,12 +235,12 @@ function handlePenMove (x, y) {
 
 // This code runs when the user lift up the mouse while drawing (i.e. stops drawing)
 function handlePenUp (x, y) {
-  console.log('no longer drawing', x, y)
-  console.log(`squiggle pixels so far: ${JSON.stringify(squigglePixels)}`)
+  // console.log('no longer drawing', x, y)
+  // console.log(`squiggle pixels so far: ${JSON.stringify(squigglePixels)}`)
 }
 
 function handleSubmit () {
-  console.log('submitted')
+  // console.log('submitted')
   highestPixelValue = getHighestPixelValue()
   lowestPixelValue = getLowestPixelValue()
   if (checkForEnoughSquiggle()) {
@@ -314,7 +314,7 @@ function getPuzzleData () {
 }
 
 function getCollisionPixels (answer) {
-  let offset = 50
+  let offset = canvas.width / 12
   let wordPixels = []
   answer.split('').forEach(letter => {
     let letterPixels = []
@@ -322,20 +322,20 @@ function getCollisionPixels (answer) {
       context.getImageData(
         offset,
         waistline - 3,
-        canvas.height / 6,
-        canvas.height / 4.8
+        canvas.height / (canvas.height / 100),
+        canvas.height / (canvas.height / 75)
       ).data.buffer
     )
     for (let i = 0; i < coords.length; i++) {
       if (coords[i]) {
         letterPixels.push({
-          x: (i % 100) + offset,
-          y: Math.floor(i / 100) + waistline - 3
+          x: (i % (canvas.width / (canvas.width / 100))) + offset,
+          y: Math.floor(i / (canvas.height / (canvas.height/100))) + waistline - 3
         })
       }
     }
     letterPixels.forEach(pixel => {
-      // context.fillRect(pixel.x + offset, pixel.y + 97, 1, 1) // debug
+      // context.fillRect(pixel.x, pixel.y + 97, 1, 1) // debug
       wordPixels.push(pixel)
     })
     offset += 100
@@ -353,12 +353,15 @@ function getCollisionPixels (answer) {
 
 function collisionDetected () {
   let eligibleSquigglePixels = squigglePixels.filter(pixel => {
-    return allCollisionXs[pixel.x] !== undefined
+    return allCollisionXs[Math.floor(pixel.x)] !== undefined
   })
   for (let k = 0; k < eligibleSquigglePixels.length; k++) {
     if (
-      eligibleSquigglePixels[k].y <= allCollisionXs[eligibleSquigglePixels[k].x]
+      eligibleSquigglePixels[k].y <= allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)] &&
+      Math.floor(eligibleSquigglePixels[k].x) < rightEdge - 5 &&
+      Math.floor(eligibleSquigglePixels[k].x) > leftEdge + 5
     ) {
+      console.log(`!!!!!!!! - Collision detected at [${Math.floor(eligibleSquigglePixels[k].x)}, ${allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)]}]`)
       return true
     }
   }
@@ -482,7 +485,7 @@ function getIdealPathPixels () {
     idealPathPixels.push({ x: i, y: waistline })
   }
   paintItRed()
-  console.log(idealPathPixels)
+  // console.log(idealPathPixels)
 }
 
 function calculateCloseness () {
@@ -527,7 +530,7 @@ function paintItRed () {
 
 function checkForEnoughSquiggle () {
   let columnsInSquiggle = 0
-  for (let i = leftEdge; i < rightEdge; i++) {
+  for (let i = Math.floor(leftEdge); i < Math.floor(rightEdge); i++) {
     if (squigglePixels.filter(pixel => Math.floor(pixel.x) === i).length > 0) {
       columnsInSquiggle += 1
     }
