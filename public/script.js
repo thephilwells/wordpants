@@ -8,32 +8,31 @@ let drawing = false
 let score
 let brushType = 'rectangle'
 let color = 'black'
-let size = 5
+let size = canvas.width / 120
 let squigglePixels = []
-let waistline = 100
-let letterBottom = 124
+let waistline = canvas.height / 6
 let highestPixelValue
 let puzzleData = getPuzzleData()
-let letterX = 50
+let letterX = canvas.width / 12
 let allCollisionXs = []
-let leftEdge = 25
-let rightEdge = 600 - 25
-let halfway = 300
+let leftEdge = canvas.width / 24
+let rightEdge = canvas.width - leftEdge
+let halfway = canvas.width / 2
 
 // draw answer
 context.strokeStyle = 'black'
 context.font = '120px Arial'
 
 puzzleData.answer.split('').forEach(letter => {
-  context.fillText(letter, letterX, 125, 100)
-  letterX += 100
+  context.fillText(letter, letterX, canvas.height / 4.8, canvas.width / 6)
+  letterX += canvas.width / 6
 })
 
 // draw drawing area
 context.strokeStyle = 'light gray'
 context.font = '12px Arial'
 context.textAlign = 'center'
-context.fillText('DRAW BELOW THIS LINE', halfway, halfway)
+context.fillText('DRAW BELOW THIS LINE', halfway, canvas.height / 2)
 
 redrawBoundaries()
 
@@ -56,16 +55,16 @@ function redrawBoundaries () {
   // draw start area
   context.beginPath()
   context.setLineDash([5, 15])
-  context.moveTo(25, 0)
-  context.lineTo(25, 600)
+  context.moveTo(leftEdge, 0)
+  context.lineTo(leftEdge, canvas.height)
   context.strokeStyle = 'green'
   context.stroke()
 
   // draw end area
   context.beginPath()
   context.setLineDash([5, 15])
-  context.moveTo(575, 0)
-  context.lineTo(575, 600)
+  context.moveTo(rightEdge, 0)
+  context.lineTo(rightEdge, canvas.height)
   context.strokeStyle = 'green'
   context.stroke()
 
@@ -229,7 +228,6 @@ function handlePenUp (x, y) {
 function handleSubmit () {
   console.log('submitted')
   if (checkForEnoughSquiggle()) {
-    context.clearRect(0, highestPixelValue, 600, 600)
     new Audio('whistleup.wav').play()
     pullUpPants()
   } else {
@@ -297,13 +295,13 @@ function getCollisionPixels (answer) {
   answer.split('').forEach(letter => {
     let letterPixels = []
     let coords = new Uint32Array(
-      context.getImageData(offset, 97, 100, 125).data.buffer
+      context.getImageData(offset, waistline - 3, canvas.height / 6, canvas.height / 4.8).data.buffer
     )
     for (let i = 0; i < coords.length; i++) {
       if (coords[i]) {
         letterPixels.push({
           x: (i % 100) + offset,
-          y: Math.floor(i / 100) + 97
+          y: Math.floor(i / 100) + waistline - 3
         })
       }
     }
@@ -479,10 +477,6 @@ function calculateCloseness () {
       squigglePixels.splice(Math.random() * squigglePixels.length, 1)
     }
   }
-  console.log(
-    `!!!!!!!! - arrays should be same size: ${idealPathPixels.length} v. ${
-      squigglePixels.length
-    }`
   )
   for (let j = 0; j < squigglePixels.length; j++) {
     distances.push(
