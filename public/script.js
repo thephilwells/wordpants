@@ -21,7 +21,7 @@ let halfway = canvas.width / 2
 
 // draw answer
 context.strokeStyle = 'black'
-context.font = '120px Arial'
+context.font = `${canvas.height/5}px Arial`
 
 puzzleData.answer.split('').forEach(letter => {
   context.fillText(letter, letterX, canvas.height / 4.8, canvas.width / 6)
@@ -88,37 +88,28 @@ window.addEventListener(
 )
 
 // Set up touch events for mobile, etc
-canvas.addEventListener(
-  'touchstart',
-  function (event) {
-    event.preventDefault()
-    if (event.target === canvas) {
-      drawing = true
-      handlePenDown(...canvasXYFromEvent(event))
-    }
+canvas.addEventListener('touchstart', function (event) {
+  event.preventDefault()
+  if (event.target === canvas) {
+    drawing = true
+    handlePenDown(getTouchPos(canvas, event).x, getTouchPos(canvas, event).y)
   }
-)
+})
 
-canvas.addEventListener(
-  'touchend',
-  function (event) {
-    event.preventDefault()
-    if (drawing === true) {
-      drawing = false
-      handlePenUp(...canvasXYFromEvent(event))
-    }
+canvas.addEventListener('touchend', function (event) {
+  event.preventDefault()
+  if (drawing === true) {
+    drawing = false
+    handlePenUp(getTouchPos(canvas, event).x, getTouchPos(canvas, event).y)
   }
-)
+})
 
-canvas.addEventListener(
-  'touchmove',
-  function (event) {
-    event.preventDefault()
-    if (drawing === true) {
-      handlePenMove(...canvasXYFromEvent(event))
-    }
+canvas.addEventListener('touchmove', function (event) {
+  event.preventDefault()
+  if (drawing === true) {
+    handlePenMove(getTouchPos(canvas, event).x, getTouchPos(canvas, event).y)
   }
-)
+})
 
 window.addEventListener(
   'mousedown',
@@ -157,8 +148,12 @@ window.addEventListener(
 
 function canvasXYFromEvent (event) {
   const { x, y } = canvas.getBoundingClientRect()
-  const clientX = event.clientX || event.targetTouches[0] && event.targetTouches[0].clientX
-  const clientY = event.clientY || event.targetTouches[0] && event.targetTouches[0].clientY
+  const clientX =
+    event.clientX ||
+    (event.targetTouches[0] && event.targetTouches[0].clientX + 90)
+  const clientY =
+    event.clientY ||
+    (event.targetTouches[0] && event.targetTouches[0].clientY + 150)
   return [clientX - x, clientY - y]
 }
 
@@ -191,17 +186,21 @@ document.body.addEventListener(
   false
 )
 
-// function handleTouchStart(x, y) {
-
-// }
-
-// function handleTouchMove(x, y) {
-
-// }
-
-// function handleTouchEnd(x, y) {
-
-// }
+function getTouchPos (canvasDom, touchEvent) {
+  var rect = canvasDom.getBoundingClientRect()
+  return {
+    x:
+      touchEvent.touches[0] &&
+      ((touchEvent.targetTouches[0].clientX - rect.left) /
+        (rect.right - rect.left)) *
+        canvasDom.width,
+    y:
+      touchEvent.touches[0] &&
+      ((touchEvent.targetTouches[0].clientY - rect.top) /
+        (rect.bottom - rect.top)) *
+        canvasDom.height
+  }
+}
 
 // This code runs when the user presses down the mouse on the canvas (starts drawing)
 function handlePenDown (x, y) {
@@ -295,7 +294,12 @@ function getCollisionPixels (answer) {
   answer.split('').forEach(letter => {
     let letterPixels = []
     let coords = new Uint32Array(
-      context.getImageData(offset, waistline - 3, canvas.height / 6, canvas.height / 4.8).data.buffer
+      context.getImageData(
+        offset,
+        waistline - 3,
+        canvas.height / 6,
+        canvas.height / 4.8
+      ).data.buffer
     )
     for (let i = 0; i < coords.length; i++) {
       if (coords[i]) {
@@ -477,7 +481,6 @@ function calculateCloseness () {
       squigglePixels.splice(Math.random() * squigglePixels.length, 1)
     }
   }
-  )
   for (let j = 0; j < squigglePixels.length; j++) {
     distances.push(
       Math.sqrt(
