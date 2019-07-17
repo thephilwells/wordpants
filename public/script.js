@@ -12,6 +12,7 @@ let size = canvas.width / 120
 let squigglePixels = []
 let waistline = canvas.height / 6
 let highestPixelValue
+let lowestPixelValue
 let puzzleData = getPuzzleData()
 let letterX = canvas.width / 12
 let allCollisionXs = []
@@ -44,6 +45,13 @@ let idealPathPixels = []
 getIdealPathPixels()
 
 function redrawBoundaries () {
+  context.clearRect(
+    0,
+    lowestPixelValue,
+    canvas.width,
+    canvas.height - lowestPixelValue
+  )
+
   // draw dashed waistline
   context.beginPath()
   context.setLineDash([5, 15])
@@ -226,6 +234,8 @@ function handlePenUp (x, y) {
 
 function handleSubmit () {
   console.log('submitted')
+  highestPixelValue = getHighestPixelValue()
+  lowestPixelValue = getLowestPixelValue()
   if (checkForEnoughSquiggle()) {
     new Audio('whistleup.wav').play()
     pullUpPants()
@@ -244,7 +254,6 @@ function placeRectangle (x, y) {
 
 async function pullUpPants () {
   redrawBoundaries()
-  highestPixelValue = getHighestPixelValue()
   for (let i = 0; i < squigglePixels.length; i++) {
     context.clearRect(
       squigglePixels[i].x - size,
@@ -259,6 +268,7 @@ async function pullUpPants () {
   }
   await sleep(0)
   highestPixelValue--
+  lowestPixelValue--
   if (highestPixelValue <= waistline) {
     score = calculateCloseness()
     alert(`TIGHT PANTS!! AVERAGE CLOSENESS: ${score}`)
@@ -275,6 +285,14 @@ function getHighestPixelValue () {
     highest = pixel.y < highest ? pixel.y : highest
   })
   return highest
+}
+
+function getLowestPixelValue() {
+  let lowest = 0
+  squigglePixels.forEach(pixel => {
+    lowest = pixel.y > lowest ? pixel.y : lowest
+  })
+  return lowest
 }
 
 function sleep (ms) {
@@ -503,7 +521,7 @@ function paintItRed () {
 function checkForEnoughSquiggle () {
   let columnsInSquiggle = 0
   for (let i = leftEdge; i < rightEdge; i++) {
-    if (squigglePixels.filter(pixel => pixel.x === i).length > 0) {
+    if (squigglePixels.filter(pixel => Math.floor(pixel.x) === i).length > 0) {
       columnsInSquiggle += 1
     }
   }
