@@ -29,10 +29,13 @@ puzzleData.answer.split('').forEach(letter => {
   letterX += 100
 })
 
+// draw drawing area
 context.strokeStyle = "light gray"
 context.font = '12px Arial'
 context.textAlign = "center"
 context.fillText('DRAW BELOW THIS LINE', halfway, halfway)
+
+redrawBoundaries()
 
 // get letter pixels below waistline
 let collisionPixels = getCollisionPixels(puzzleData.answer)
@@ -41,37 +44,39 @@ let collisionPixels = getCollisionPixels(puzzleData.answer)
 let idealPathPixels = []
 getIdealPathPixels()
 
-// draw dashed waistline
-context.beginPath()
-context.setLineDash([5, 15])
-context.moveTo(0, waistline - 3)
-context.lineTo(600, waistline - 3)
-context.strokeStyle = "blue"
-context.stroke()
+function redrawBoundaries() {
+  // draw dashed waistline
+  context.beginPath()
+  context.setLineDash([5, 15])
+  context.moveTo(0, waistline - 3)
+  context.lineTo(600, waistline - 3)
+  context.strokeStyle = "blue"
+  context.stroke()
 
-// draw start area
-context.beginPath()
-context.setLineDash([5, 15])
-context.moveTo(25, 0)
-context.lineTo(25, 600)
-context.strokeStyle = "green"
-context.stroke()
+  // draw start area
+  context.beginPath()
+  context.setLineDash([5, 15])
+  context.moveTo(25, 0)
+  context.lineTo(25, 600)
+  context.strokeStyle = "green"
+  context.stroke()
 
-// draw end area
-context.beginPath()
-context.setLineDash([5, 15])
-context.moveTo(575, 0)
-context.lineTo(575, 600)
-context.strokeStyle = "green"
-context.stroke()
+  // draw end area
+  context.beginPath()
+  context.setLineDash([5, 15])
+  context.moveTo(575, 0)
+  context.lineTo(575, 600)
+  context.strokeStyle = "green"
+  context.stroke()
 
-// draw drawing area boundary
-context.beginPath()
-context.setLineDash([5, 15])
-context.moveTo(0, halfway)
-context.lineTo(600, halfway)
-context.strokeStyle = "gray"
-context.stroke()
+  // draw drawing area boundary
+  context.beginPath()
+  context.setLineDash([5, 15])
+  context.moveTo(0, halfway)
+  context.lineTo(600, halfway)
+  context.strokeStyle = "gray"
+  context.stroke()
+}
 
 window.addEventListener(
   'click',
@@ -243,6 +248,7 @@ function placeRectangle(x, y) {
 }
 
 async function pullUpPants() {
+  redrawBoundaries()
   highestPixelValue = getHighestPixelValue()
   for (let i = 0; i < squigglePixels.length; i++) {
     context.clearRect(squigglePixels[i].x - size, squigglePixels[i].y - size, size, size)
