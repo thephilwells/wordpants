@@ -1,5 +1,12 @@
-const canvas = document.getElementById('canvas')
-// const pantsPocket = documnet.getElementById('pants-pocket')
+let canvas
+if (window.innerWidth < 600) {
+  canvas = document.getElementById('mobile-canvas')
+  document.getElementById('canvas').parentNode.removeChild(document.getElementById('canvas'))
+} else {
+  canvas = document.getElementById('canvas')
+  document.getElementById('mobile-canvas').parentNode.removeChild(document.getElementById('mobile-canvas'))
+}
+
 const context = canvas.getContext('2d')
 
 const puzzleAnswer = 'PANTS'
@@ -31,7 +38,7 @@ puzzleData.answer.split('').forEach(letter => {
 
 // draw drawing area
 context.strokeStyle = 'light gray'
-context.font = '12px Arial'
+context.font = `${canvas.height/50}px Arial`
 context.textAlign = 'center'
 context.fillText('DRAW BELOW THIS LINE', halfway, canvas.height / 2)
 
@@ -56,7 +63,7 @@ function redrawBoundaries () {
   context.beginPath()
   context.setLineDash([5, 15])
   context.moveTo(0, waistline - 3)
-  context.lineTo(600, waistline - 3)
+  context.lineTo(canvas.width, waistline - 3)
   context.strokeStyle = 'blue'
   context.stroke()
 
@@ -158,10 +165,10 @@ function canvasXYFromEvent (event) {
   const { x, y } = canvas.getBoundingClientRect()
   const clientX =
     event.clientX ||
-    (event.targetTouches[0] && event.targetTouches[0].clientX + 90)
+    (event.targetTouches[0] && event.targetTouches[0].clientX)
   const clientY =
     event.clientY ||
-    (event.targetTouches[0] && event.targetTouches[0].clientY + 150)
+    (event.targetTouches[0] && event.targetTouches[0].clientY)
   return [clientX - x, clientY - y]
 }
 
