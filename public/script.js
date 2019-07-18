@@ -1,13 +1,20 @@
 let canvas
+let headerCanvas
+
 if (window.innerWidth < 600) {
   canvas = document.getElementById('mobile-canvas')
+  headerCanvas = document.getElementById('mobile-header-canvas')
   document.getElementById('canvas').parentNode.removeChild(document.getElementById('canvas'))
+  document.getElementById('header-canvas').parentNode.removeChild(document.getElementById('header-canvas'))
 } else {
   canvas = document.getElementById('canvas')
+  headerCanvas = document.getElementById('header-canvas')
   document.getElementById('mobile-canvas').parentNode.removeChild(document.getElementById('mobile-canvas'))
+  document.getElementById('mobile-header-canvas').parentNode.removeChild(document.getElementById('mobile-header-canvas'))
 }
 
 const context = canvas.getContext('2d')
+const headerContext = headerCanvas.getContext('2d')
 
 const puzzleAnswer = 'PANTS'
 
@@ -26,6 +33,13 @@ let allCollisionXs = []
 let leftEdge = canvas.width / 24
 let rightEdge = canvas.width - leftEdge
 let halfway = canvas.width / 2
+
+// draw jean in header
+const jeanImage = new Image()
+jeanImage.onload = () => {
+  headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
+}
+jeanImage.src = 'BlueJeanWithEyes.png'
 
 // draw answer
 context.strokeStyle = 'black'
