@@ -34,45 +34,82 @@ let leftEdge = canvas.width / 24
 let rightEdge = canvas.width - leftEdge
 let halfway = canvas.width / 2
 
-// draw jean in header
-const jeanImage = new Image()
-jeanImage.onload = () => {
-  headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
-}
-jeanImage.src = 'BlueJeanWithEyes.png'
-
-// draw answer
-context.strokeStyle = 'black'
-context.font = `${canvas.height/5}px Arial`
-
-puzzleData.answer.split('').forEach(letter => {
-  context.fillText(letter, letterX, canvas.height / 4.8, canvas.width / 6)
-  letterX += canvas.width / 6
-})
-
-// draw drawing area
-context.strokeStyle = 'light gray'
-context.font = `10px Arial`
-context.textAlign = 'center'
-context.fillText('DRAW BELOW THIS LINE', halfway, canvas.height / 2 - 5)
-
-// draw start label
-context.save()
-context.translate(leftEdge - (canvas.width / 80), canvas.height - (canvas.width / 4))
-context.rotate(-0.5*Math.PI);
-var rText = 'START HERE'
-context.fillText(rText , 0, 0);
-context.restore();
-
-// draw end label
-context.save()
-context.translate(canvas.width - (canvas.width / 80), canvas.height - (canvas.width / 4))
-context.rotate(-0.5*Math.PI);
-var rText = 'END HERE'
-context.fillText(rText , 0, 0);
-context.restore();
-
+redrawHeaderTemplate()
 redrawBoundaries()
+drawAnswer()
+drawBoundaryTexts()
+setHeaderText(`Clue: ${puzzleData.clue}`)
+
+function redrawHeaderTemplate() {
+  // draw jean in header
+  const jeanImage = new Image()
+  jeanImage.onload = () => {
+    headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
+  }
+  jeanImage.src = 'BlueJeanWithEyes.png'
+
+  // draw speech bubble
+  var pi2 = Math.PI * 2                     // 360 deg.
+  var r = 5, w = headerCanvas.width * .75 - 20, h = (headerCanvas.height / .87) - (headerCanvas.height / 5)
+
+  // draw rounded rectangle
+  headerContext.beginPath();
+  headerContext.arc(r + 5, r + 2, r, pi2*0.5, pi2*0.75);          // top-left
+  headerContext.arc((r+w-r*2) + 5, r + 2, r, pi2*0.75, pi2);      // top-right
+  headerContext.lineTo((r+w-r*2) + 10, r + 2 + 20)
+  headerContext.lineTo((r+w-r*2) + 20, r + 2 + 25)
+  headerContext.stroke()
+  headerContext.lineTo((r+w-r*2) + 10, r + 2 + 30)
+  headerContext.stroke()
+  headerContext.arc((r+w-r*2) + 5, (r+h-r*2) + 2, r, 0, pi2*0.25);// bottom-right
+  headerContext.arc(r + 5, (r+h-r*2) + 2, r, pi2*0.25, pi2*0.5);  // bottom-left
+  headerContext.arc(r + 5, r + 2, r, pi2*0.5, pi2*0.75);          // top-left
+  headerContext.stroke()
+  headerContext.closePath()
+}
+
+function drawAnswer() {
+  // draw answer
+  context.strokeStyle = 'black'
+  context.font = `${canvas.height/5}px Arial`
+
+  puzzleData.answer.split('').forEach(letter => {
+    context.fillText(letter, letterX, canvas.height / 4.8, canvas.width / 6)
+    letterX += canvas.width / 6
+  })
+}
+
+function drawBoundaryTexts() {
+  // draw drawing area
+  context.strokeStyle = 'light gray'
+  context.font = `10px Arial`
+  context.textAlign = 'center'
+  context.fillText('DRAW BELOW THIS LINE', halfway, canvas.height / 2 - 5)
+
+  // draw start label
+  context.save()
+  context.translate(leftEdge - (canvas.width / 80), canvas.height - (canvas.width / 4))
+  context.rotate(-0.5*Math.PI);
+  var rText = 'START HERE'
+  context.fillText(rText , 0, 0);
+  context.restore();
+
+  // draw end label
+  context.save()
+  context.translate(canvas.width - (canvas.width / 80), canvas.height - (canvas.width / 4))
+  context.rotate(-0.5*Math.PI);
+  var rText = 'END HERE'
+  context.fillText(rText , 0, 0);
+  context.restore();
+}
+
+function setHeaderText(text) {
+  headerContext.clearRect(0, 0, headerCanvas.width, headerCanvas.height)
+  redrawHeaderTemplate()
+  headerContext.textAlign = "center"
+  headerContext.font = `${headerCanvas.height / 6}px Arial`
+  headerContext.fillText(text, (headerCanvas.width * .75 - (canvas.width / 40)) / 2, (headerCanvas.height / .87) - (headerCanvas.height / 5) - (headerCanvas.height / 2.5))
+}
 
 // get letter pixels below waistline
 let collisionPixels = getCollisionPixels(puzzleData.answer)
@@ -278,7 +315,7 @@ function handleSubmit () {
     new Audio('whistleup.wav').play()
     pullUpPants()
   } else {
-    alert('NOT ENOUGH PANTS - FILL IN THE GAPS')
+    setHeaderText('NOT ENOUGH PANTS - FILL IN THE GAPS')
   }
   // context.clearRect(0, 0, canvas.width, canvas.height)
 }
@@ -309,9 +346,9 @@ async function pullUpPants () {
   lowestPixelValue--
   if (highestPixelValue <= waistline) {
     score = calculateCloseness()
-    alert(`TIGHT PANTS!! AVERAGE CLOSENESS: ${score}`)
+    setHeaderText(`TIGHT PANTS!! AVERAGE CLOSENESS: ${Math.floor(score)}`)
   } else if (collisionDetected()) {
-    alert('COLLISION DETECTED!! REFRESH AND TRY AGAIN!!')
+    setHeaderText('COLLISION DETECTED!! TRY AGAIN!!')
   } else {
     pullUpPants()
   }
@@ -339,7 +376,7 @@ function sleep (ms) {
 
 function getPuzzleData () {
   // TODO: get these values from api
-  const clue = "Thirsty Doggo's Emissions"
+  const clue = "THIRSTY DOG'S EMISSIONS"
   const answer = puzzleAnswer
   return { clue, answer }
 }
