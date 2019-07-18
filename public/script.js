@@ -57,7 +57,7 @@ buttonContext.fillStyle = 'gray'
 buttonContext.font = `25px Arial`
 buttonContext.textAlign = 'center'
 buttonContext.textBaseline = "middle"
-buttonContext.fillText('UNDO', buttonCanvas.width * .25, 25)
+buttonContext.fillText('', buttonCanvas.width * .25, 25)
 buttonContext.fillText('SUBMIT', buttonCanvas.width * .75, 25)
 
 // handle button taps and clicks
