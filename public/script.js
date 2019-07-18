@@ -35,20 +35,13 @@ let rightEdge = canvas.width - leftEdge
 let halfway = canvas.width / 2
 
 redrawHeaderTemplate()
+calmJean()
 redrawBoundaries()
 drawAnswer()
 drawBoundaryTexts()
 setHeaderText(`Clue: ${puzzleData.clue}`)
 
-function redrawHeaderTemplate() {
-  // draw jean in header
-  const jeanImage = new Image()
-  jeanImage.onload = () => {
-    headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
-  }
-  jeanImage.src = 'BlueJeanWithEyes.png'
-
-  // draw speech bubble
+function redrawHeaderTemplate() {// draw speech bubble
   var pi2 = Math.PI * 2                     // 360 deg.
   var r = 5, w = headerCanvas.width * .75 - 20, h = (headerCanvas.height / .87) - (headerCanvas.height / 5)
 
@@ -66,6 +59,24 @@ function redrawHeaderTemplate() {
   headerContext.arc(r + 5, r + 2, r, pi2*0.5, pi2*0.75);          // top-left
   headerContext.stroke()
   headerContext.closePath()
+}
+
+function calmJean() {
+  // draw jean in header
+  const jeanImage = new Image()
+  jeanImage.onload = () => {
+    headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
+  }
+  jeanImage.src = 'BlueJeanWithEyes.png'
+}
+
+function shockJean() {
+  // draw jean in header
+  const jeanImage = new Image()
+  jeanImage.onload = () => {
+    headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
+  }
+  jeanImage.src = 'BlueJeanWithBigEyes.png'
 }
 
 function drawAnswer() {
@@ -243,6 +254,7 @@ function canvasXYFromEvent (event) {
 document.body.addEventListener(
   'touchstart',
   function (e) {
+    calmJean()
     if (e.target == canvas) {
       e.preventDefault()
     }
@@ -261,6 +273,7 @@ document.body.addEventListener(
 document.body.addEventListener(
   'touchmove',
   function (e) {
+    calmJean()
     if (e.target == canvas) {
       e.preventDefault()
     }
@@ -288,12 +301,14 @@ function getTouchPos (canvasDom, touchEvent) {
 // This code runs when the user presses down the mouse on the canvas (starts drawing)
 function handlePenDown (x, y) {
   if (y >= halfway) {
+    calmJean()
     placeRectangle(x, y)
     squigglePixels.push({ x, y })
   }
 }
 // This code runs when the user moves their mouse around while drawing
 function handlePenMove (x, y) {
+    calmJean()
   if (y >= halfway) {
     // console.log('drawing and moving', x, y)
     placeRectangle(x, y)
@@ -315,6 +330,7 @@ function handleSubmit () {
     new Audio('whistleup.wav').play()
     pullUpPants()
   } else {
+    shockJean()
     setHeaderText('NOT ENOUGH PANTS - FILL IN THE GAPS')
   }
   // context.clearRect(0, 0, canvas.width, canvas.height)
@@ -346,8 +362,10 @@ async function pullUpPants () {
   lowestPixelValue--
   if (highestPixelValue <= waistline) {
     score = calculateCloseness()
+    shockJean()
     setHeaderText(`TIGHT PANTS!! AVERAGE CLOSENESS: ${Math.floor(score)}`)
   } else if (collisionDetected()) {
+    shockJean()
     setHeaderText('COLLISION DETECTED!! TRY AGAIN!!')
   } else {
     pullUpPants()
