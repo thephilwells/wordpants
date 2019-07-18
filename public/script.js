@@ -422,7 +422,11 @@ async function pullUpPants () {
   if (highestPixelValue <= waistline) {
     score = calculateCloseness()
     shockJean()
-    setHeaderText(`TIGHT PANTS!! AVERAGE CLOSENESS: ${Math.floor(score)}`)
+    if (score < canvas.width / 12) {
+      setHeaderText(`TIGHT PANTS!! AVERAGE CLOSENESS: ${Math.floor(score)}`)
+    } else {
+      setHeaderText(`Too baggy! Average closeness: ${Math.floor(score)}. Try again!`)
+    }
   } else if (collisionDetected()) {
     shockJean()
     setHeaderText('COLLISION DETECTED!! TRY AGAIN!!')
