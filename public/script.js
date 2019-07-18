@@ -4,17 +4,22 @@ let headerCanvas
 if (window.innerWidth < 600) {
   canvas = document.getElementById('mobile-canvas')
   headerCanvas = document.getElementById('mobile-header-canvas')
+  buttonCanvas = document.getElementById('mobile-button-canvas')
   document.getElementById('canvas').parentNode.removeChild(document.getElementById('canvas'))
   document.getElementById('header-canvas').parentNode.removeChild(document.getElementById('header-canvas'))
+  document.getElementById('button-canvas').parentNode.removeChild(document.getElementById('button-canvas'))
 } else {
   canvas = document.getElementById('canvas')
   headerCanvas = document.getElementById('header-canvas')
+  buttonCanvas = document.getElementById('button-canvas')
   document.getElementById('mobile-canvas').parentNode.removeChild(document.getElementById('mobile-canvas'))
   document.getElementById('mobile-header-canvas').parentNode.removeChild(document.getElementById('mobile-header-canvas'))
+  document.getElementById('mobile-button-canvas').parentNode.removeChild(document.getElementById('mobile-button-canvas'))
 }
 
 const context = canvas.getContext('2d')
 const headerContext = headerCanvas.getContext('2d')
+const buttonContext = buttonCanvas.getContext('2d')
 
 const puzzleAnswer = 'PANTS'
 
@@ -40,6 +45,45 @@ redrawBoundaries()
 drawAnswer()
 drawBoundaryTexts()
 setHeaderText(`Clue: ${puzzleData.clue}`)
+
+// draw buttons
+buttonContext.beginPath()
+buttonContext.setLineDash([5, 5])
+buttonContext.moveTo(halfway, 0)
+buttonContext.lineTo(halfway, buttonCanvas.height)
+buttonContext.strokeStyle = 'gray'
+buttonContext.stroke()
+buttonContext.fillStyle = 'gray'
+buttonContext.font = `25px Arial`
+buttonContext.textAlign = 'center'
+buttonContext.textBaseline = "middle"
+buttonContext.fillText('UNDO', buttonCanvas.width * .25, 25)
+buttonContext.fillText('SUBMIT', buttonCanvas.width * .75, 25)
+
+// handle button taps and clicks
+function isInside(pos, rect) {
+  return pos[0] > rect.x && pos[0] < rect.x+rect.width && pos[1] < rect.y+rect.height && pos[1] > rect.y
+}
+
+const undoRect = {
+  x: 0,
+  y: 0,
+  width: buttonCanvas.width / 2,
+  height: buttonCanvas.height
+}
+
+const submitRect = {
+  x: buttonCanvas.width / 2,
+  y: 0,
+  width: buttonCanvas.width / 2,
+  height: buttonCanvas.height
+}
+
+buttonCanvas.addEventListener('click', (event) => {
+  if (isInside(canvasXYFromEvent(event, buttonCanvas), submitRect)) {
+    handleSubmit()
+  } 
+}, false)
 
 function redrawHeaderTemplate() {// draw speech bubble
   var pi2 = Math.PI * 2                     // 360 deg.
@@ -184,6 +228,7 @@ window.addEventListener(
 canvas.addEventListener('touchstart', function (event) {
   event.preventDefault()
   if (event.target === canvas) {
+    calmJean()
     drawing = true
     handlePenDown(getTouchPos(canvas, event).x, getTouchPos(canvas, event).y)
   }
@@ -210,7 +255,7 @@ window.addEventListener(
     event.preventDefault()
     if (event.target === canvas) {
       drawing = true
-      handlePenDown(...canvasXYFromEvent(event))
+      handlePenDown(...canvasXYFromEvent(event, canvas))
     }
   },
   false
@@ -221,7 +266,7 @@ window.addEventListener(
   function (event) {
     event.preventDefault()
     if (drawing === true) {
-      handlePenMove(...canvasXYFromEvent(event))
+      handlePenMove(...canvasXYFromEvent(event, canvas))
     }
   },
   false
@@ -233,13 +278,13 @@ window.addEventListener(
     event.preventDefault()
     if (drawing === true) {
       drawing = false
-      handlePenUp(...canvasXYFromEvent(event))
+      handlePenUp(...canvasXYFromEvent(event, canvas))
     }
   },
   false
 )
 
-function canvasXYFromEvent (event) {
+function canvasXYFromEvent (event, canvas) {
   const { x, y } = canvas.getBoundingClientRect()
   const clientX =
     event.clientX ||
@@ -249,37 +294,6 @@ function canvasXYFromEvent (event) {
     (event.targetTouches[0] && event.targetTouches[0].clientY)
   return [clientX - x, clientY - y]
 }
-
-// Prevent scrolling when touching the canvas
-document.body.addEventListener(
-  'touchstart',
-  function (e) {
-    calmJean()
-    if (e.target == canvas) {
-      e.preventDefault()
-    }
-  },
-  false
-)
-document.body.addEventListener(
-  'touchend',
-  function (e) {
-    if (e.target == canvas) {
-      e.preventDefault()
-    }
-  },
-  false
-)
-document.body.addEventListener(
-  'touchmove',
-  function (e) {
-    calmJean()
-    if (e.target == canvas) {
-      e.preventDefault()
-    }
-  },
-  false
-)
 
 function getTouchPos (canvasDom, touchEvent) {
   var rect = canvasDom.getBoundingClientRect()
@@ -308,7 +322,6 @@ function handlePenDown (x, y) {
 }
 // This code runs when the user moves their mouse around while drawing
 function handlePenMove (x, y) {
-    calmJean()
   if (y >= halfway) {
     // console.log('drawing and moving', x, y)
     placeRectangle(x, y)

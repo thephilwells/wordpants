@@ -41,6 +41,15 @@ canvas {
   height: 50px;
 }
 
+#button-canvas{
+  height: 50px;
+}
+
+#mobile-button-canvas {
+  height: 50px;
+  width: 300px;
+}
+
 #info {
   margin-left: 8px;
 }
