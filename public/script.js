@@ -53,6 +53,7 @@ splashCanvas.addEventListener('click', (event) => {
 const puzzleAnswer = 'PANTS'
 
 let drawing = false
+let winScreen = false
 let score
 let brushType = 'rectangle'
 let color = 'black'
@@ -61,7 +62,8 @@ let squigglePixels = []
 let waistline = canvas.height / 6
 let highestPixelValue
 let lowestPixelValue
-let puzzleData = getPuzzleData()
+let puzzleNumber = 0
+let puzzleData = getPuzzleData(puzzleNumber)
 let letterX = canvas.width / 12
 let allCollisionXs = []
 let leftEdge = canvas.width / 24
@@ -370,14 +372,21 @@ function handlePenUp (x, y) {
 
 function handleSubmit () {
   // console.log('submitted')
-  highestPixelValue = getHighestPixelValue()
-  lowestPixelValue = getLowestPixelValue()
-  if (checkForEnoughSquiggle()) {
-    new Audio('whistleup.wav').play()
-    pullUpPants()
+  if (winScreen) {
+    buttonContext.clearRect(buttonCanvas.width / 2, 0, buttonCanvas.width, buttonCanvas.height)
+    buttonContext.fillText('SUBMIT', buttonCanvas.width * .75, 25)
+    handleRestart()
+    winScreen = false
   } else {
-    shockJean()
-    setHeaderText('NOT ENOUGH PANTS - FILL IN THE GAPS')
+    highestPixelValue = getHighestPixelValue()
+    lowestPixelValue = getLowestPixelValue()
+    if (checkForEnoughSquiggle()) {
+      new Audio('whistleup.wav').play()
+      pullUpPants()
+    } else {
+      shockJean()
+      setHeaderText('NOT ENOUGH PANTS - FILL IN THE GAPS')
+    }
   }
   // context.clearRect(0, 0, canvas.width, canvas.height)
 }
@@ -424,6 +433,11 @@ async function pullUpPants () {
     shockJean()
     if (score < canvas.width / 12) {
       setHeaderText(`TIGHT PANTS!! AVERAGE CLOSENESS: ${Math.floor(score)}`)
+      puzzleNumber += 1
+      puzzleData = getPuzzleData(puzzleNumber)
+      winScreen = true
+      buttonContext.clearRect(buttonCanvas.width / 2, 0, buttonCanvas.width, buttonCanvas.height)
+      buttonContext.fillText('NEXT', buttonCanvas.width * .75, 25)
     } else {
       setHeaderText(`Too baggy! Average closeness: ${Math.floor(score)}. Try again!`)
     }
@@ -453,13 +467,6 @@ function getLowestPixelValue() {
 
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-function getPuzzleData () {
-  // TODO: get these values from api
-  const clue = "THIRSTY DOG'S EMISSIONS"
-  const answer = puzzleAnswer
-  return { clue, answer }
 }
 
 function getCollisionPixels (answer) {
@@ -685,4 +692,26 @@ function checkForEnoughSquiggle () {
     }
   }
   return columnsInSquiggle / (rightEdge - leftEdge) > 0.5
+}
+
+function getPuzzleData (index) {
+  // TODO: get these values from api
+  const set = [
+      {clue: "CLINTONS' KITTY", answer: "SOCKS"},
+      {clue: "MONASTERY HEAD", answer: "ABBOT"},
+      {clue: "TURKEY TOPPER", answer: "GRAVY"},
+      {clue: "CUDDLE, IN A WAY", answer: "SPOON"},
+      {clue: "5-7-5 POEM", answer: "HAIKU"},
+      {clue: "CLAMMY", answer: "MOIST"},
+      {clue: "THAT IS ... ROUGH", answer: "YIKES"},
+      {clue: "JUST PLAIN PEOPLE", answer: "FOLKS"},
+      {clue: "OF POOR QUALITY, SLANGILY", answer: "JANKY"},
+      {clue: "SOW, AS SEEDS", answer: "PLANT"},
+      {clue: "LAB WEAR", answer: "SMOCK"},
+      {clue: "CIRCULAR DINNER ORDER", answer: "PIZZA"},
+      {clue: "LEG EXERCISE", answer: "SQUAT"},
+      {clue: "THAT'S HILARIOUS", answer: "LMFAO"},
+      {clue: "THIRSTY DOG'S EMISSIONS", answer: "PANTS"},
+    ]
+  return { clue: set[index].clue, answer: set[index].answer }
 }
