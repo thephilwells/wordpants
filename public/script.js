@@ -1,5 +1,6 @@
 let canvas
 let headerCanvas
+let buttonCanvas
 
 if (window.innerWidth < 600) {
   canvas = document.getElementById('mobile-canvas')
@@ -57,7 +58,7 @@ buttonContext.fillStyle = 'gray'
 buttonContext.font = `25px Arial`
 buttonContext.textAlign = 'center'
 buttonContext.textBaseline = "middle"
-buttonContext.fillText('', buttonCanvas.width * .25, 25)
+buttonContext.fillText('RESTART', buttonCanvas.width * .25, 25)
 buttonContext.fillText('SUBMIT', buttonCanvas.width * .75, 25)
 
 // handle button taps and clicks
@@ -65,7 +66,7 @@ function isInside(pos, rect) {
   return pos[0] > rect.x && pos[0] < rect.x+rect.width && pos[1] < rect.y+rect.height && pos[1] > rect.y
 }
 
-const undoRect = {
+const restartRect = {
   x: 0,
   y: 0,
   width: buttonCanvas.width / 2,
@@ -82,7 +83,9 @@ const submitRect = {
 buttonCanvas.addEventListener('click', (event) => {
   if (isInside(canvasXYFromEvent(event, buttonCanvas), submitRect)) {
     handleSubmit()
-  } 
+  } else if (isInside(canvasXYFromEvent(event, buttonCanvas), restartRect)) {
+    handleRestart()
+  }
 }, false)
 
 function redrawHeaderTemplate() {// draw speech bubble
@@ -127,11 +130,13 @@ function drawAnswer() {
   // draw answer
   context.strokeStyle = 'black'
   context.font = `${canvas.height/5}px Arial`
-
+  context.textAlign = 'left'
+  const initialLetterX = letterX
   puzzleData.answer.split('').forEach(letter => {
     context.fillText(letter, letterX, canvas.height / 4.8, canvas.width / 6)
     letterX += canvas.width / 6
   })
+  letterX = initialLetterX
 }
 
 function drawBoundaryTexts() {
@@ -347,6 +352,19 @@ function handleSubmit () {
     setHeaderText('NOT ENOUGH PANTS - FILL IN THE GAPS')
   }
   // context.clearRect(0, 0, canvas.width, canvas.height)
+}
+
+function handleRestart() {
+    new Audio('whistledown.wav').play()
+  squigglePixels = []
+  context.clearRect(0, 0, canvas.width, canvas.height)
+  context.closePath()
+  redrawHeaderTemplate()
+  calmJean()
+  drawAnswer()
+  redrawBoundaries()
+  drawBoundaryTexts()
+  setHeaderText(`Clue: ${puzzleData.clue}`)
 }
 
 function placeRectangle (x, y) {
