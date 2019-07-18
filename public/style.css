@@ -20,6 +20,18 @@ canvas {
   max-height: 600px;
 }
 
+#mobile-splash {
+  width: 300px;
+  height: 300px;
+  margin-top: 72px;
+  border: none;
+}
+
+#splash {
+  border: none;
+  margin-top: 72px;
+}
+
 #header-canvas {
   height: 100px;
 }

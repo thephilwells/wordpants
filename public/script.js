@@ -1,26 +1,54 @@
 let canvas
 let headerCanvas
 let buttonCanvas
+let splashCanvas
 
 if (window.innerWidth < 600) {
-  canvas = document.getElementById('mobile-canvas')
-  headerCanvas = document.getElementById('mobile-header-canvas')
-  buttonCanvas = document.getElementById('mobile-button-canvas')
-  document.getElementById('canvas').parentNode.removeChild(document.getElementById('canvas'))
-  document.getElementById('header-canvas').parentNode.removeChild(document.getElementById('header-canvas'))
-  document.getElementById('button-canvas').parentNode.removeChild(document.getElementById('button-canvas'))
+  splashCanvas = document.getElementById('mobile-splash')
+  document.getElementById('splash').parentNode.removeChild(document.getElementById('splash'))
 } else {
-  canvas = document.getElementById('canvas')
-  headerCanvas = document.getElementById('header-canvas')
-  buttonCanvas = document.getElementById('button-canvas')
-  document.getElementById('mobile-canvas').parentNode.removeChild(document.getElementById('mobile-canvas'))
-  document.getElementById('mobile-header-canvas').parentNode.removeChild(document.getElementById('mobile-header-canvas'))
-  document.getElementById('mobile-button-canvas').parentNode.removeChild(document.getElementById('mobile-button-canvas'))
+  splashCanvas = document.getElementById('splash')
+  document.getElementById('mobile-splash').parentNode.removeChild(document.getElementById('mobile-splash'))
 }
+
+  if (window.innerWidth < 600) {
+    canvas = document.getElementById('mobile-canvas')
+    headerCanvas = document.getElementById('mobile-header-canvas')
+    buttonCanvas = document.getElementById('mobile-button-canvas')
+    document.getElementById('canvas').parentNode.removeChild(document.getElementById('canvas'))
+    document.getElementById('header-canvas').parentNode.removeChild(document.getElementById('header-canvas'))
+    document.getElementById('button-canvas').parentNode.removeChild(document.getElementById('button-canvas'))
+  } else {
+    canvas = document.getElementById('canvas')
+    headerCanvas = document.getElementById('header-canvas')
+    buttonCanvas = document.getElementById('button-canvas')
+    document.getElementById('mobile-canvas').parentNode.removeChild(document.getElementById('mobile-canvas'))
+    document.getElementById('mobile-header-canvas').parentNode.removeChild(document.getElementById('mobile-header-canvas'))
+    document.getElementById('mobile-button-canvas').parentNode.removeChild(document.getElementById('mobile-button-canvas'))
+  }
+
+canvas.style.visibility = "hidden"
+headerCanvas.style.visibility = "hidden"
+buttonCanvas.style.visibility = "hidden"
 
 const context = canvas.getContext('2d')
 const headerContext = headerCanvas.getContext('2d')
 const buttonContext = buttonCanvas.getContext('2d')
+const splashContext = splashCanvas.getContext('2d')
+
+const splashImage = new Image()
+splashImage.onload = () => {
+  splashContext.drawImage(splashImage, 0, 0, canvas.width, canvas.height)
+}
+splashImage.src = 'wordpantssplash.png'
+
+splashCanvas.addEventListener('click', (event) => {
+  splashCanvas.style.display = "none"
+  canvas.style.visibility = "visible"
+  headerCanvas.style.visibility = "visible"
+  buttonCanvas.style.visibility = "visible"
+}, false)
+
 
 const puzzleAnswer = 'PANTS'
 
@@ -361,9 +389,9 @@ function handleRestart() {
   context.closePath()
   redrawHeaderTemplate()
   calmJean()
-  drawAnswer()
   redrawBoundaries()
   drawBoundaryTexts()
+  drawAnswer()
   setHeaderText(`Clue: ${puzzleData.clue}`)
 }
 
