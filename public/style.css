@@ -1,8 +1,17 @@
 html {
+  background: white;
+}
+
+body {
+  margin: 0px;
   background: lightblue;
 }
 
 canvas {
+  margin-top: 8px;
+  border-style: dashed;
+  border-color: lightgray;
+  border-width: 2px;
   background: white;
   touch-action: none;
   width: calc(100vw - 16px);
@@ -16,6 +25,31 @@ canvas {
   height: 300px;
   margin-left: auto;
   margin-right: auto;
+  margin-top: 8px;
   display: block;
   position: relative;
+  border-right: none;
+  border-left: none;
+}
+
+#info {
+  margin-left: 8px;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: center;
+  width: 800px;
+  background: white;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 100vh;
+}
+
+@media screen and (max-width: 599px) {
+  #container {
+    width: 300px
+  }
 }

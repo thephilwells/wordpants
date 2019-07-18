@@ -38,9 +38,25 @@ puzzleData.answer.split('').forEach(letter => {
 
 // draw drawing area
 context.strokeStyle = 'light gray'
-context.font = `${canvas.height/50}px Arial`
+context.font = `10px Arial`
 context.textAlign = 'center'
-context.fillText('DRAW BELOW THIS LINE', halfway, canvas.height / 2)
+context.fillText('DRAW BELOW THIS LINE', halfway, canvas.height / 2 - 5)
+
+// draw start label
+context.save()
+context.translate(leftEdge - (canvas.width / 80), canvas.height - (canvas.width / 4))
+context.rotate(-0.5*Math.PI);
+var rText = 'START HERE'
+context.fillText(rText , 0, 0);
+context.restore();
+
+// draw end label
+context.save()
+context.translate(canvas.width - (canvas.width / 80), canvas.height - (canvas.width / 4))
+context.rotate(-0.5*Math.PI);
+var rText = 'END HERE'
+context.fillText(rText , 0, 0);
+context.restore();
 
 redrawBoundaries()
 
@@ -61,7 +77,7 @@ function redrawBoundaries () {
 
   // draw dashed waistline
   context.beginPath()
-  context.setLineDash([5, 15])
+  context.setLineDash([])
   context.moveTo(0, waistline - 3)
   context.lineTo(canvas.width, waistline - 3)
   context.strokeStyle = 'blue'
@@ -70,7 +86,7 @@ function redrawBoundaries () {
   // draw start area
   context.beginPath()
   context.setLineDash([5, 15])
-  context.moveTo(leftEdge, 0)
+  context.moveTo(leftEdge, waistline)
   context.lineTo(leftEdge, canvas.height)
   context.strokeStyle = 'green'
   context.stroke()
@@ -78,7 +94,7 @@ function redrawBoundaries () {
   // draw end area
   context.beginPath()
   context.setLineDash([5, 15])
-  context.moveTo(rightEdge, 0)
+  context.moveTo(rightEdge, waistline)
   context.lineTo(rightEdge, canvas.height)
   context.strokeStyle = 'green'
   context.stroke()
@@ -87,7 +103,7 @@ function redrawBoundaries () {
   context.beginPath()
   context.setLineDash([5, 15])
   context.moveTo(0, halfway)
-  context.lineTo(600, halfway)
+  context.lineTo(canvas.width, halfway)
   context.strokeStyle = 'gray'
   context.stroke()
 }
@@ -208,12 +224,13 @@ function getTouchPos (canvasDom, touchEvent) {
       touchEvent.touches[0] &&
       ((touchEvent.targetTouches[0].clientX - rect.left) /
         (rect.right - rect.left)) *
-        canvasDom.width,
+        canvasDom.width - 20,
     y:
       touchEvent.touches[0] &&
       ((touchEvent.targetTouches[0].clientY - rect.top) /
         (rect.bottom - rect.top)) *
         canvasDom.height
+        - 25
   }
 }
 
