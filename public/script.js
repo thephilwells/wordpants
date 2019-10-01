@@ -57,12 +57,14 @@ let winScreen = false
 let score
 let brushType = 'rectangle'
 let color = 'black'
-let size = canvas.width / 120
+let size = canvas.width / 240
 let squigglePixels = []
+let collisionPixels = []
 let waistline = canvas.height / 6
 let highestPixelValue
 let lowestPixelValue
 let puzzleNumber = 0
+let idealPathPixels = []
 let puzzleData = getPuzzleData(puzzleNumber)
 let letterX = canvas.width / 12
 let allCollisionXs = []
@@ -167,6 +169,12 @@ function drawAnswer() {
     letterX += canvas.width / 6
   })
   letterX = initialLetterX
+  
+  // get letter pixels below waistline
+  collisionPixels = getCollisionPixels(puzzleData.answer)
+
+  // calculate ideal path from collision pixels
+  getIdealPathPixels()
 }
 
 function drawBoundaryTexts() {
@@ -201,12 +209,7 @@ function setHeaderText(text) {
   headerContext.fillText(text, (headerCanvas.width * .75 - (canvas.width / 40)) / 2, (headerCanvas.height / .87) - (headerCanvas.height / 5) - (headerCanvas.height / 2.5))
 }
 
-// get letter pixels below waistline
-let collisionPixels = getCollisionPixels(puzzleData.answer)
 
-// calculate ideal path from collision pixels
-let idealPathPixels = []
-getIdealPathPixels()
 
 function redrawBoundaries () {
   context.clearRect(
@@ -372,7 +375,10 @@ function handlePenUp (x, y) {
 
 function handleSubmit () {
   // console.log('submitted')
+  squigglePixels = squigglePixels.filter(pixel => pixel.x >= 0)
   if (winScreen) {
+    collisionPixels = []
+    allCollisionXs = []
     buttonContext.clearRect(buttonCanvas.width / 2, 0, buttonCanvas.width, buttonCanvas.height)
     buttonContext.fillText('SUBMIT', buttonCanvas.width * .75, 25)
     handleRestart()
@@ -401,6 +407,9 @@ function handleRestart() {
   redrawBoundaries()
   drawBoundaryTexts()
   drawAnswer()
+  collisionPixels = getCollisionPixels(puzzleData.answer)
+  idealPathPixels = []
+  getIdealPathPixels()
   setHeaderText(`Clue: ${puzzleData.clue}`)
 }
 
@@ -428,10 +437,11 @@ async function pullUpPants () {
   await sleep(0)
   highestPixelValue--
   lowestPixelValue--
+  console.log(`WAISTLINE: ${waistline} HIGHEST SQUIGGLE POINT: ${highestPixelValue}`)
   if (highestPixelValue <= waistline) {
     score = calculateCloseness()
     shockJean()
-    if (score < canvas.width / 12) {
+    if (score < 51) {
       setHeaderText(`TIGHT PANTS!! AVERAGE CLOSENESS: ${Math.floor(score)}`)
       puzzleNumber += 1
       puzzleData = getPuzzleData(puzzleNumber)
@@ -679,9 +689,11 @@ function calculateCloseness () {
 }
 
 function paintItRed () {
-  // context.fillStyle = "red"
-  // idealPathPixels.forEach(px => { context.fillRect(px.x, px.y, 1, 1) })
-  // context.fillStyle = "black"
+  /*
+  context.fillStyle = "red"
+  idealPathPixels.forEach(px => { context.fillRect(px.x, px.y, 1, 1) })
+  context.fillStyle = "black"
+  */
 }
 
 function checkForEnoughSquiggle () {
@@ -714,4 +726,12 @@ function getPuzzleData (index) {
       {clue: "THIRSTY DOG'S EMISSIONS", answer: "PANTS"},
     ]
   return { clue: set[index].clue, answer: set[index].answer }
+}
+
+function isMobile() {
+   if(size < 550) {
+     return true;
+   } else {
+     return false;
+   }
 }
