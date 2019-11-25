@@ -40,7 +40,7 @@ const splashImage = new Image()
 splashImage.onload = () => {
   splashContext.drawImage(splashImage, 0, 0, canvas.width, canvas.height)
 }
-splashImage.src = 'wordpantssplash.png'
+splashImage.src = '/assets/wordpantssplash.png'
 
 splashCanvas.addEventListener('click', (event) => {
   splashCanvas.style.display = "none"
@@ -146,7 +146,7 @@ function calmJean() {
   jeanImage.onload = () => {
     headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
   }
-  jeanImage.src = 'BlueJeanWithEyes.png'
+  jeanImage.src = '/assets/BlueJeanWithEyes.png'
 }
 
 function shockJean() {
@@ -155,7 +155,7 @@ function shockJean() {
   jeanImage.onload = () => {
     headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
   }
-  jeanImage.src = 'BlueJeanWithBigEyes.png'
+  jeanImage.src = '/assets/BlueJeanWithBigEyes.png'
 }
 
 function drawAnswer() {
@@ -387,7 +387,7 @@ function handleSubmit () {
     highestPixelValue = getHighestPixelValue()
     lowestPixelValue = getLowestPixelValue()
     if (checkForEnoughSquiggle()) {
-      new Audio('whistleup.wav').play()
+      new Audio('/assets/whistleup.wav').play()
       pullUpPants()
     } else {
       shockJean()
@@ -398,7 +398,7 @@ function handleSubmit () {
 }
 
 function handleRestart() {
-    new Audio('whistledown.wav').play()
+    new Audio('/assets/whistledown.wav').play()
   squigglePixels = []
   context.clearRect(0, 0, canvas.width, canvas.height)
   context.closePath()
