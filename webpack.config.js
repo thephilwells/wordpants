@@ -1,27 +1,26 @@
-const absolutePath = require("./utils/relativeToAbsolutePath")(__dirname);
-const webpack = require("webpack");
+/* eslint-disable global-require */
+const webpack = require('webpack')
+const path = require('path')
+const absolutePath = require('./utils/relativeToAbsolutePath')(__dirname)
 
 module.exports = {
-  mode: "development",
-  entry: [
-    "webpack-hot-middleware/client",
-    absolutePath("./app/index.js")
-  ],
+  mode: 'development',
+  entry: path.resolve(__dirname, './app/index.js'),
   output: {
-    filename: "main.js"
+    filename: 'main.js',
   },
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      }
-    ]
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    new (require("html-webpack-plugin"))({
-      template: absolutePath("./public/index.html") 
-    })
-  ]
-};
+    new (require('html-webpack-plugin'))({
+      template: absolutePath('./public/index.html'),
+    }),
+  ],
+}
