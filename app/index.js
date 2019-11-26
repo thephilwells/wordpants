@@ -3,6 +3,7 @@ import getPuzzleData from './lib/puzzleData'
 import redrawHeaderTemplate from './lib/redrawHeaderTemplate'
 import setCanvasMobileBreakpoint from './lib/setCanvasMobileBreakpoint'
 import placeSplashImage from './lib/placeSplashImage'
+import log from './lib/logger'
 
 // draw the canvas in either desktop or mobile size, setting size values
 const {
@@ -653,7 +654,7 @@ function getIdealPathPixels() {
     }
   }
 
-  for (let i = highestCollisionX; i < rightEdge; i++) {
+  for (let i = highestCollisionX; i < rightEdge; i += 1) {
     idealPathPixels.push({ x: i, y: waistline })
   }
   paintItRed()
@@ -672,12 +673,12 @@ function calculateCloseness() {
   const idealLength = idealPathPixels.length
   const diff = Math.abs(idealLength - squiggleLength)
   if (idealLength > squiggleLength) {
-    for (let i = 0; i < diff; i++) {
+    for (let i = 0; i < diff; i += 1) {
       idealPathPixels.splice(Math.random() * idealPathPixels.length, 1)
     }
   }
   if (squiggleLength > idealLength) {
-    for (let i = 0; i < diff; i++) {
+    for (let i = 0; i < diff; i += 1) {
       squigglePixels.splice(Math.random() * squigglePixels.length, 1)
     }
   }
@@ -690,7 +691,7 @@ function calculateCloseness() {
     )
   }
   const avgDistance = distances.reduce((sum, x) => sum + x) / distances.length
-  console.log(`!!!!!!!! - average distance: ${avgDistance}`)
+  log(`!!!!!!!! - average distance: ${avgDistance}`)
   return avgDistance
 }
 
@@ -704,7 +705,7 @@ function paintItRed() {
 
 function checkForEnoughSquiggle() {
   let columnsInSquiggle = 0
-  for (let i = Math.floor(leftEdge); i < Math.floor(rightEdge); i++) {
+  for (let i = Math.floor(leftEdge); i < Math.floor(rightEdge); i += 1) {
     if (squigglePixels.filter(pixel => Math.floor(pixel.x) === i).length > 0) {
       columnsInSquiggle += 1
     }
