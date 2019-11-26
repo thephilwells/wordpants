@@ -45,5 +45,23 @@ export default function setCanvasMobileBreakpoint(breakpoint = 600) {
       .parentNode.removeChild(document.getElementById('mobile-button-canvas'))
   }
 
-  return { canvas, headerCanvas, buttonCanvas, splashCanvas }
+  canvas.style.visibility = 'hidden'
+  headerCanvas.style.visibility = 'hidden'
+  buttonCanvas.style.visibility = 'hidden'
+
+  const context = canvas.getContext('2d')
+  const headerContext = headerCanvas.getContext('2d')
+  const buttonContext = buttonCanvas.getContext('2d')
+  const splashContext = splashCanvas.getContext('2d')
+
+  return {
+    canvas,
+    headerCanvas,
+    buttonCanvas,
+    splashCanvas,
+    context,
+    headerContext,
+    buttonContext,
+    splashContext,
+  }
 }

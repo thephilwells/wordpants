@@ -2,38 +2,29 @@
 import getPuzzleData from './lib/puzzleData'
 import redrawHeaderTemplate from './lib/redrawHeaderTemplate'
 import setCanvasMobileBreakpoint from './lib/setCanvasMobileBreakpoint'
+import placeSplashImage from './lib/placeSplashImage'
 
+// draw the canvas in either desktop or mobile size, setting size values
 const {
   canvas,
   headerCanvas,
   buttonCanvas,
   splashCanvas,
+  context,
+  headerContext,
+  buttonContext,
+  splashContext,
 } = setCanvasMobileBreakpoint(600)
 
-canvas.style.visibility = 'hidden'
-headerCanvas.style.visibility = 'hidden'
-buttonCanvas.style.visibility = 'hidden'
-
-const context = canvas.getContext('2d')
-const headerContext = headerCanvas.getContext('2d')
-const buttonContext = buttonCanvas.getContext('2d')
-const splashContext = splashCanvas.getContext('2d')
-
-const splashImage = new Image()
-splashImage.onload = () => {
-  splashContext.drawImage(splashImage, 0, 0, canvas.width, canvas.height)
-}
-splashImage.src = '/img/wordpantssplash.png'
-
-splashCanvas.addEventListener(
-  'click',
-  () => {
-    splashCanvas.style.display = 'none'
-    canvas.style.visibility = 'visible'
-    headerCanvas.style.visibility = 'visible'
-    buttonCanvas.style.visibility = 'visible'
-  },
-  false
+// on first load, display the splash image on the canvas
+// on click, the splash disappears and the game canvasses appear
+// TODO: replace with a modal, or moment, or something i guess
+placeSplashImage(
+  splashContext,
+  splashCanvas,
+  canvas,
+  headerCanvas,
+  buttonCanvas
 )
 
 let drawing = false
