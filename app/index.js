@@ -1,5 +1,6 @@
 /* eslint-env browser */
 import getPuzzleData from './lib/puzzleData'
+import redrawHeaderTemplate from './lib/redrawHeaderTemplate'
 
 let canvas
 let headerCanvas
@@ -91,7 +92,7 @@ const leftEdge = canvas.width / 24
 const rightEdge = canvas.width - leftEdge
 const halfway = canvas.width / 2
 
-redrawHeaderTemplate()
+redrawHeaderTemplate(headerCanvas)
 calmJean()
 redrawBoundaries()
 drawAnswer()
@@ -147,27 +148,6 @@ buttonCanvas.addEventListener(
   },
   false
 )
-
-function redrawHeaderTemplate() {
-  // draw speech bubble
-  let pi2 = Math.PI * 2 // 360 deg.
-  let r = 5; var w = headerCanvas.width * .75 - 20; var h = (headerCanvas.height / .87) - (headerCanvas.height / 5)
-
-  // draw rounded rectangle
-  headerContext.beginPath()
-  headerContext.arc(r + 5, r + 2, r, pi2 * 0.5, pi2 * 0.75) // top-left
-  headerContext.arc(r + w - r * 2 + 5, r + 2, r, pi2 * 0.75, pi2) // top-right
-  headerContext.lineTo(r + w - r * 2 + 10, r + 2 + 20)
-  headerContext.lineTo(r + w - r * 2 + 20, r + 2 + 25)
-  headerContext.stroke()
-  headerContext.lineTo(r + w - r * 2 + 10, r + 2 + 30)
-  headerContext.stroke()
-  headerContext.arc(r + w - r * 2 + 5, r + h - r * 2 + 2, r, 0, pi2 * 0.25) // bottom-right
-  headerContext.arc(r + 5, r + h - r * 2 + 2, r, pi2 * 0.25, pi2 * 0.5) // bottom-left
-  headerContext.arc(r + 5, r + 2, r, pi2 * 0.5, pi2 * 0.75) // top-left
-  headerContext.stroke()
-  headerContext.closePath()
-}
 
 function calmJean() {
   // draw jean in header
@@ -250,7 +230,7 @@ function drawBoundaryTexts() {
 
 function setHeaderText(text) {
   headerContext.clearRect(0, 0, headerCanvas.width, headerCanvas.height)
-  redrawHeaderTemplate()
+  redrawHeaderTemplate(headerCanvas)
   headerContext.textAlign = 'center'
   headerContext.font = `${headerCanvas.height / 6}px Arial`
   headerContext.fillText(
@@ -457,7 +437,7 @@ function handleRestart() {
   squigglePixels = []
   context.clearRect(0, 0, canvas.width, canvas.height)
   context.closePath()
-  redrawHeaderTemplate()
+  redrawHeaderTemplate(headerCanvas)
   calmJean()
   redrawBoundaries()
   drawBoundaryTexts()
