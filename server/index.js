@@ -1,6 +1,5 @@
 const { resolve } = require("path");
 
-const assets = require("../assets");
 const express = require("express");
 
 const { PORT } = process.env || 8080;
