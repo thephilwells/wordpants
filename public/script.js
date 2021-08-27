@@ -538,11 +538,23 @@ function collisionDetected () {
       Math.floor(eligibleSquigglePixels[k].x) < rightEdge - 5 &&
       Math.floor(eligibleSquigglePixels[k].x) > leftEdge + 5
     ) {
-      console.log(`!!!!!!!! - Collision detected at [${Math.floor(eligibleSquigglePixels[k].x)}, ${allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)]}]`)
+      // console.log(`!!!!!!!! - Collision detected at [${Math.floor(eligibleSquigglePixels[k].x)}, ${allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)]}]`)
+      drawCollisionJuice(Math.floor(eligibleSquigglePixels[k].x), allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)])
       return true
     }
   }
   return false
+}
+
+function drawCollisionJuice(x, y) {
+  context.beginPath()
+  context.arc(x, y, size * 10, 0, 2 * Math.PI)
+  const temp = context.fillStyle
+  context.fillStyle = "red"
+  context.globalAlpha = 0.5
+  context.fill()
+  context.fillStyle = temp
+  context.globalAlpha = 1
 }
 
 function getIdealPathPixels () {
@@ -695,7 +707,7 @@ function calculateCloseness () {
     )
   }
   const avgDistance = distances.reduce((sum, x) => sum + x) / distances.length
-  console.log(`!!!!!!!! - average distance: ${avgDistance}`)
+  // console.log(`!!!!!!!! - average distance: ${avgDistance}`)
   return avgDistance
 }
 
