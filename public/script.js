@@ -1,41 +1,66 @@
-/* eslint-env browser */
-import getPuzzleData from './lib/puzzleData'
-import redrawHeaderTemplate from './lib/redrawHeaderTemplate'
-import setCanvasMobileBreakpoint from './lib/setCanvasMobileBreakpoint'
-import placeSplashImage from './lib/placeSplashImage'
-import log from './lib/logger'
+let canvas
+let headerCanvas
+let buttonCanvas
+let splashCanvas
 
-// draw the canvas in either desktop or mobile size, setting size values
-const {
-  canvas,
-  headerCanvas,
-  buttonCanvas,
-  splashCanvas,
-  context,
-  headerContext,
-  buttonContext,
-  splashContext,
-} = setCanvasMobileBreakpoint(600)
+if (window.innerWidth < 600) {
+  splashCanvas = document.getElementById('mobile-splash')
+  document.getElementById('splash').parentNode.removeChild(document.getElementById('splash'))
+} else {
+  splashCanvas = document.getElementById('splash')
+  document.getElementById('mobile-splash').parentNode.removeChild(document.getElementById('mobile-splash'))
+}
 
-// on first load, display the splash image on the canvas
-// on click, the splash disappears and the game canvasses appear
-// TODO: replace with a modal, or moment, or something i guess
-placeSplashImage(
-  splashContext,
-  splashCanvas,
-  canvas,
-  headerCanvas,
-  buttonCanvas
-)
+  if (window.innerWidth < 600) {
+    canvas = document.getElementById('mobile-canvas')
+    headerCanvas = document.getElementById('mobile-header-canvas')
+    buttonCanvas = document.getElementById('mobile-button-canvas')
+    document.getElementById('canvas').parentNode.removeChild(document.getElementById('canvas'))
+    document.getElementById('header-canvas').parentNode.removeChild(document.getElementById('header-canvas'))
+    document.getElementById('button-canvas').parentNode.removeChild(document.getElementById('button-canvas'))
+  } else {
+    canvas = document.getElementById('canvas')
+    headerCanvas = document.getElementById('header-canvas')
+    buttonCanvas = document.getElementById('button-canvas')
+    document.getElementById('mobile-canvas').parentNode.removeChild(document.getElementById('mobile-canvas'))
+    document.getElementById('mobile-header-canvas').parentNode.removeChild(document.getElementById('mobile-header-canvas'))
+    document.getElementById('mobile-button-canvas').parentNode.removeChild(document.getElementById('mobile-button-canvas'))
+  }
+
+canvas.style.visibility = "hidden"
+headerCanvas.style.visibility = "hidden"
+buttonCanvas.style.visibility = "hidden"
+
+const context = canvas.getContext('2d')
+const headerContext = headerCanvas.getContext('2d')
+const buttonContext = buttonCanvas.getContext('2d')
+const splashContext = splashCanvas.getContext('2d')
+
+const splashImage = new Image()
+splashImage.onload = () => {
+  splashContext.drawImage(splashImage, 0, 0, canvas.width, canvas.height)
+}
+splashImage.src = 'wordpantssplash.png'
+
+splashCanvas.addEventListener('click', (event) => {
+  splashCanvas.style.display = "none"
+  canvas.style.visibility = "visible"
+  headerCanvas.style.visibility = "visible"
+  buttonCanvas.style.visibility = "visible"
+}, false)
+
+
+const puzzleAnswer = 'PANTS'
 
 let drawing = false
 let winScreen = false
 let score
-const color = 'black'
-const size = canvas.width / 240
+let brushType = 'rectangle'
+let color = 'black'
+let size = canvas.width / 240
 let squigglePixels = []
 let collisionPixels = []
-const waistline = canvas.height / 6
+let waistline = canvas.height / 6
 let highestPixelValue
 let lowestPixelValue
 let puzzleNumber = 0
@@ -43,11 +68,11 @@ let idealPathPixels = []
 let puzzleData = getPuzzleData(puzzleNumber)
 let letterX = canvas.width / 12
 let allCollisionXs = []
-const leftEdge = canvas.width / 24
-const rightEdge = canvas.width - leftEdge
-const halfway = canvas.width / 2
+let leftEdge = canvas.width / 24
+let rightEdge = canvas.width - leftEdge
+let halfway = canvas.width / 2
 
-redrawHeaderTemplate(headerCanvas)
+redrawHeaderTemplate()
 calmJean()
 redrawBoundaries()
 drawAnswer()
@@ -64,80 +89,79 @@ buttonContext.stroke()
 buttonContext.fillStyle = 'gray'
 buttonContext.font = `25px Arial`
 buttonContext.textAlign = 'center'
-buttonContext.textBaseline = 'middle'
-buttonContext.fillText('RESTART', buttonCanvas.width * 0.25, 25)
-buttonContext.fillText('SUBMIT', buttonCanvas.width * 0.75, 25)
+buttonContext.textBaseline = "middle"
+buttonContext.fillText('RESTART', buttonCanvas.width * .25, 25)
+buttonContext.fillText('SUBMIT', buttonCanvas.width * .75, 25)
 
 // handle button taps and clicks
 function isInside(pos, rect) {
-  return (
-    pos[0] > rect.x &&
-    pos[0] < rect.x + rect.width &&
-    pos[1] < rect.y + rect.height &&
-    pos[1] > rect.y
-  )
+  return pos[0] > rect.x && pos[0] < rect.x+rect.width && pos[1] < rect.y+rect.height && pos[1] > rect.y
 }
 
 const restartRect = {
   x: 0,
   y: 0,
   width: buttonCanvas.width / 2,
-  height: buttonCanvas.height,
+  height: buttonCanvas.height
 }
 
 const submitRect = {
   x: buttonCanvas.width / 2,
   y: 0,
   width: buttonCanvas.width / 2,
-  height: buttonCanvas.height,
+  height: buttonCanvas.height
 }
 
-buttonCanvas.addEventListener(
-  'click',
-  event => {
-    if (isInside(canvasXYFromEvent(event, buttonCanvas), submitRect)) {
-      handleSubmit()
-    } else if (isInside(canvasXYFromEvent(event, buttonCanvas), restartRect)) {
-      handleRestart()
-    }
-  },
-  false
-)
+buttonCanvas.addEventListener('click', (event) => {
+  if (isInside(canvasXYFromEvent(event, buttonCanvas), submitRect)) {
+    handleSubmit()
+  } else if (isInside(canvasXYFromEvent(event, buttonCanvas), restartRect)) {
+    handleRestart()
+  }
+}, false)
+
+function redrawHeaderTemplate() {// draw speech bubble
+  var pi2 = Math.PI * 2                     // 360 deg.
+  var r = 5, w = headerCanvas.width * .75 - 20, h = (headerCanvas.height / .87) - (headerCanvas.height / 5)
+
+  // draw rounded rectangle
+  headerContext.beginPath();
+  headerContext.arc(r + 5, r + 2, r, pi2*0.5, pi2*0.75);          // top-left
+  headerContext.arc((r+w-r*2) + 5, r + 2, r, pi2*0.75, pi2);      // top-right
+  headerContext.lineTo((r+w-r*2) + 10, r + 2 + 20)
+  headerContext.lineTo((r+w-r*2) + 20, r + 2 + 25)
+  headerContext.stroke()
+  headerContext.lineTo((r+w-r*2) + 10, r + 2 + 30)
+  headerContext.stroke()
+  headerContext.arc((r+w-r*2) + 5, (r+h-r*2) + 2, r, 0, pi2*0.25);// bottom-right
+  headerContext.arc(r + 5, (r+h-r*2) + 2, r, pi2*0.25, pi2*0.5);  // bottom-left
+  headerContext.arc(r + 5, r + 2, r, pi2*0.5, pi2*0.75);          // top-left
+  headerContext.stroke()
+  headerContext.closePath()
+}
 
 function calmJean() {
   // draw jean in header
   const jeanImage = new Image()
   jeanImage.onload = () => {
-    headerContext.drawImage(
-      jeanImage,
-      headerCanvas.width - headerCanvas.width / 4 - 2,
-      2,
-      headerCanvas.width / 4,
-      headerCanvas.height / 0.87 - headerCanvas.height / 5
-    )
+    headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
   }
-  jeanImage.src = '/img/BlueJeanWithEyes.png'
+  jeanImage.src = 'BlueJeanWithEyes.png'
 }
 
 function shockJean() {
   // draw jean in header
   const jeanImage = new Image()
   jeanImage.onload = () => {
-    headerContext.drawImage(
-      jeanImage,
-      headerCanvas.width - headerCanvas.width / 4 - 2,
-      2,
-      headerCanvas.width / 4,
-      headerCanvas.height / 0.87 - headerCanvas.height / 5
-    )
+    headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
   }
-  jeanImage.src = '/img/BlueJeanWithBigEyes.png'
+  jeanImage.src = 'BlueJeanWithBigEyes.png'
 }
 
 function drawAnswer() {
   // draw answer
   context.strokeStyle = 'black'
-  context.font = `${canvas.height / 5}px Arial`
+  context.font = `${canvas.height/5}px Arial`
   context.textAlign = 'left'
   const initialLetterX = letterX
   puzzleData.answer.split('').forEach(letter => {
@@ -145,7 +169,7 @@ function drawAnswer() {
     letterX += canvas.width / 6
   })
   letterX = initialLetterX
-
+  
   // get letter pixels below waistline
   collisionPixels = getCollisionPixels(puzzleData.answer)
 
@@ -162,42 +186,32 @@ function drawBoundaryTexts() {
 
   // draw start label
   context.save()
-  context.translate(
-    leftEdge - canvas.width / 80,
-    canvas.height - canvas.width / 4
-  )
-  context.rotate(-0.5 * Math.PI)
+  context.translate(leftEdge - (canvas.width / 80), canvas.height - (canvas.width / 4))
+  context.rotate(-0.5*Math.PI);
   var rText = 'START HERE'
-  context.fillText(rText, 0, 0)
-  context.restore()
+  context.fillText(rText , 0, 0);
+  context.restore();
 
   // draw end label
   context.save()
-  context.translate(
-    canvas.width - canvas.width / 80,
-    canvas.height - canvas.width / 4
-  )
-  context.rotate(-0.5 * Math.PI)
+  context.translate(canvas.width - (canvas.width / 80), canvas.height - (canvas.width / 4))
+  context.rotate(-0.5*Math.PI);
   var rText = 'END HERE'
-  context.fillText(rText, 0, 0)
-  context.restore()
+  context.fillText(rText , 0, 0);
+  context.restore();
 }
 
 function setHeaderText(text) {
   headerContext.clearRect(0, 0, headerCanvas.width, headerCanvas.height)
-  redrawHeaderTemplate(headerCanvas)
-  headerContext.textAlign = 'center'
+  redrawHeaderTemplate()
+  headerContext.textAlign = "center"
   headerContext.font = `${headerCanvas.height / 6}px Arial`
-  headerContext.fillText(
-    text,
-    (headerCanvas.width * 0.75 - canvas.width / 40) / 2,
-    headerCanvas.height / 0.87 -
-      headerCanvas.height / 5 -
-      headerCanvas.height / 2.5
-  )
+  headerContext.fillText(text, (headerCanvas.width * .75 - (canvas.width / 40)) / 2, (headerCanvas.height / .87) - (headerCanvas.height / 5) - (headerCanvas.height / 2.5))
 }
 
-function redrawBoundaries() {
+
+
+function redrawBoundaries () {
   context.clearRect(
     0,
     lowestPixelValue,
@@ -240,7 +254,7 @@ function redrawBoundaries() {
 
 window.addEventListener(
   'click',
-  function(event) {
+  function (event) {
     if (event.target.id === 'submit') {
       handleSubmit()
     }
@@ -249,7 +263,7 @@ window.addEventListener(
 )
 
 // Set up touch events for mobile, etc
-canvas.addEventListener('touchstart', function(event) {
+canvas.addEventListener('touchstart', function (event) {
   event.preventDefault()
   if (event.target === canvas) {
     calmJean()
@@ -258,7 +272,7 @@ canvas.addEventListener('touchstart', function(event) {
   }
 })
 
-canvas.addEventListener('touchend', function(event) {
+canvas.addEventListener('touchend', function (event) {
   event.preventDefault()
   if (drawing === true) {
     drawing = false
@@ -266,7 +280,7 @@ canvas.addEventListener('touchend', function(event) {
   }
 })
 
-canvas.addEventListener('touchmove', function(event) {
+canvas.addEventListener('touchmove', function (event) {
   event.preventDefault()
   if (drawing === true) {
     handlePenMove(getTouchPos(canvas, event).x, getTouchPos(canvas, event).y)
@@ -275,7 +289,7 @@ canvas.addEventListener('touchmove', function(event) {
 
 window.addEventListener(
   'mousedown',
-  function(event) {
+  function (event) {
     event.preventDefault()
     if (event.target === canvas) {
       drawing = true
@@ -287,7 +301,7 @@ window.addEventListener(
 
 window.addEventListener(
   'mousemove',
-  function(event) {
+  function (event) {
     event.preventDefault()
     if (drawing === true) {
       handlePenMove(...canvasXYFromEvent(event, canvas))
@@ -298,7 +312,7 @@ window.addEventListener(
 
 window.addEventListener(
   'mouseup',
-  function(event) {
+  function (event) {
     event.preventDefault()
     if (drawing === true) {
       drawing = false
@@ -308,35 +322,36 @@ window.addEventListener(
   false
 )
 
-function canvasXYFromEvent(event, canvas) {
+function canvasXYFromEvent (event, canvas) {
   const { x, y } = canvas.getBoundingClientRect()
   const clientX =
-    event.clientX || (event.targetTouches[0] && event.targetTouches[0].clientX)
+    event.clientX ||
+    (event.targetTouches[0] && event.targetTouches[0].clientX)
   const clientY =
-    event.clientY || (event.targetTouches[0] && event.targetTouches[0].clientY)
+    event.clientY ||
+    (event.targetTouches[0] && event.targetTouches[0].clientY)
   return [clientX - x, clientY - y]
 }
 
-function getTouchPos(canvasDom, touchEvent) {
-  const rect = canvasDom.getBoundingClientRect()
+function getTouchPos (canvasDom, touchEvent) {
+  var rect = canvasDom.getBoundingClientRect()
   return {
     x:
       touchEvent.touches[0] &&
       ((touchEvent.targetTouches[0].clientX - rect.left) /
         (rect.right - rect.left)) *
-        canvasDom.width -
-        20,
+        canvasDom.width - 20,
     y:
       touchEvent.touches[0] &&
       ((touchEvent.targetTouches[0].clientY - rect.top) /
         (rect.bottom - rect.top)) *
-        canvasDom.height -
-        25,
+        canvasDom.height
+        - 25
   }
 }
 
 // This code runs when the user presses down the mouse on the canvas (starts drawing)
-function handlePenDown(x, y) {
+function handlePenDown (x, y) {
   if (y >= halfway) {
     calmJean()
     placeRectangle(x, y)
@@ -344,7 +359,7 @@ function handlePenDown(x, y) {
   }
 }
 // This code runs when the user moves their mouse around while drawing
-function handlePenMove(x, y) {
+function handlePenMove (x, y) {
   if (y >= halfway) {
     // console.log('drawing and moving', x, y)
     placeRectangle(x, y)
@@ -353,24 +368,19 @@ function handlePenMove(x, y) {
 }
 
 // This code runs when the user lift up the mouse while drawing (i.e. stops drawing)
-function handlePenUp(x, y) {
+function handlePenUp (x, y) {
   // console.log('no longer drawing', x, y)
   // console.log(`squiggle pixels so far: ${JSON.stringify(squigglePixels)}`)
 }
 
-function handleSubmit() {
+function handleSubmit () {
   // console.log('submitted')
   squigglePixels = squigglePixels.filter(pixel => pixel.x >= 0)
   if (winScreen) {
     collisionPixels = []
     allCollisionXs = []
-    buttonContext.clearRect(
-      buttonCanvas.width / 2,
-      0,
-      buttonCanvas.width,
-      buttonCanvas.height
-    )
-    buttonContext.fillText('SUBMIT', buttonCanvas.width * 0.75, 25)
+    buttonContext.clearRect(buttonCanvas.width / 2, 0, buttonCanvas.width, buttonCanvas.height)
+    buttonContext.fillText('SUBMIT', buttonCanvas.width * .75, 25)
     handleRestart()
     winScreen = false
   } else {
@@ -392,7 +402,7 @@ function handleRestart() {
   squigglePixels = []
   context.clearRect(0, 0, canvas.width, canvas.height)
   context.closePath()
-  redrawHeaderTemplate(headerCanvas)
+  redrawHeaderTemplate()
   calmJean()
   redrawBoundaries()
   drawBoundaryTexts()
@@ -403,20 +413,20 @@ function handleRestart() {
   setHeaderText(`Clue: ${puzzleData.clue}`)
 }
 
-function placeRectangle(x, y) {
+function placeRectangle (x, y) {
   context.fillRect(x, y, size, size)
   context.closePath()
   context.fillStyle = color
   context.fill()
 }
 
-async function pullUpPants() {
+async function pullUpPants () {
   // clear all pixels beneath lowest pixel on the squiggle, and redraw game board
   redrawBoundaries()
   
   // traverse the squiggle
   for (let i = 0; i < squigglePixels.length; i++) {
-    const initialPixels = { x: squigglePixels[i].x, y: squigglePixels[i].y }
+    let initialPixels = { x: squigglePixels[i].x, y: squigglePixels[i].y }
     let newPixel = { x: initialPixels.x, y: initialPixels.y - size }
     placeRectangle(newPixel.x, newPixel.y)
     // console.log(`Clearing rectangle at x: ${squigglePixels[i].x - size / 2}, y: ${squigglePixels[i].y + size / 2}, size ${size * 2}x${size * 2}`)
@@ -447,17 +457,10 @@ async function pullUpPants() {
       puzzleNumber += 1
       puzzleData = getPuzzleData(puzzleNumber)
       winScreen = true
-      buttonContext.clearRect(
-        buttonCanvas.width / 2,
-        0,
-        buttonCanvas.width,
-        buttonCanvas.height
-      )
-      buttonContext.fillText('NEXT', buttonCanvas.width * 0.75, 25)
+      buttonContext.clearRect(buttonCanvas.width / 2, 0, buttonCanvas.width, buttonCanvas.height)
+      buttonContext.fillText('NEXT', buttonCanvas.width * .75, 25)
     } else {
       setHeaderText(`Too baggy! Average closeness: ${Math.floor(score)} pixels. Try again!`)
-        `Too baggy! Average closeness: ${Math.floor(score)}. Try again!`
-      )
     }
   } else if (collisionDetected()) {
     shockJean()
@@ -467,7 +470,7 @@ async function pullUpPants() {
   }
 }
 
-function getHighestPixelValue() {
+function getHighestPixelValue () {
   let highest = 9999
   squigglePixels.forEach(pixel => {
     highest = pixel.y < highest ? pixel.y : highest
@@ -483,16 +486,16 @@ function getLowestPixelValue() {
   return lowest
 }
 
-function sleep(ms) {
+function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function getCollisionPixels(answer) {
+function getCollisionPixels (answer) {
   let offset = canvas.width / 12
-  const wordPixels = []
+  let wordPixels = []
   answer.split('').forEach(letter => {
-    const letterPixels = []
-    const coords = new Uint32Array(
+    let letterPixels = []
+    let coords = new Uint32Array(
       context.getImageData(
         offset,
         waistline - 3,
@@ -504,10 +507,7 @@ function getCollisionPixels(answer) {
       if (coords[i]) {
         letterPixels.push({
           x: (i % (canvas.width / (canvas.width / 100))) + offset,
-          y:
-            Math.floor(i / (canvas.height / (canvas.height / 100))) +
-            waistline -
-            3,
+          y: Math.floor(i / (canvas.height / (canvas.height/100))) + waistline - 3
         })
       }
     }
@@ -528,33 +528,28 @@ function getCollisionPixels(answer) {
   return wordPixels
 }
 
-function collisionDetected() {
-  const eligibleSquigglePixels = squigglePixels.filter(pixel => {
+function collisionDetected () {
+  let eligibleSquigglePixels = squigglePixels.filter(pixel => {
     return allCollisionXs[Math.floor(pixel.x)] !== undefined
   })
   for (let k = 0; k < eligibleSquigglePixels.length; k++) {
     if (
-      eligibleSquigglePixels[k].y <=
-        allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)] &&
+      eligibleSquigglePixels[k].y <= allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)] &&
       Math.floor(eligibleSquigglePixels[k].x) < rightEdge - 5 &&
       Math.floor(eligibleSquigglePixels[k].x) > leftEdge + 5
     ) {
-      console.log(
-        `!!!!!!!! - Collision detected at [${Math.floor(
-          eligibleSquigglePixels[k].x
-        )}, ${allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)]}]`
-      )
+      console.log(`!!!!!!!! - Collision detected at [${Math.floor(eligibleSquigglePixels[k].x)}, ${allCollisionXs[Math.floor(eligibleSquigglePixels[k].x)]}]`)
       return true
     }
   }
   return false
 }
 
-function getIdealPathPixels() {
+function getIdealPathPixels () {
   // start of waistline to first filled pixel's X coordinate
-  const index = parseInt(Object.keys(allCollisionXs)[0])
-  const lowestCollisionX = index
-  const highestCollisionX = allCollisionXs.length - 1
+  let index = parseInt(Object.keys(allCollisionXs)[0])
+  let lowestCollisionX = index
+  let highestCollisionX = allCollisionXs.length - 1
   for (let i = leftEdge; i < lowestCollisionX; i++) {
     idealPathPixels.push({ x: i, y: waistline })
   }
@@ -663,14 +658,14 @@ function getIdealPathPixels() {
     }
   }
 
-  for (let i = highestCollisionX; i < rightEdge; i += 1) {
+  for (let i = highestCollisionX; i < rightEdge; i++) {
     idealPathPixels.push({ x: i, y: waistline })
   }
   paintItRed()
   // console.log(idealPathPixels)
 }
 
-function calculateCloseness() {
+function calculateCloseness () {
   const distances = []
 
   // chop out-of-bounds squigglePixels
@@ -678,16 +673,16 @@ function calculateCloseness() {
     pixel => pixel.x > leftEdge && pixel.x < rightEdge
   )
 
-  const squiggleLength = squigglePixels.length
-  const idealLength = idealPathPixels.length
+  let squiggleLength = squigglePixels.length
+  let idealLength = idealPathPixels.length
   const diff = Math.abs(idealLength - squiggleLength)
   if (idealLength > squiggleLength) {
-    for (let i = 0; i < diff; i += 1) {
+    for (let i = 0; i < diff; i++) {
       idealPathPixels.splice(Math.random() * idealPathPixels.length, 1)
     }
   }
   if (squiggleLength > idealLength) {
-    for (let i = 0; i < diff; i += 1) {
+    for (let i = 0; i < diff; i++) {
       squigglePixels.splice(Math.random() * squigglePixels.length, 1)
     }
   }
@@ -700,11 +695,11 @@ function calculateCloseness() {
     )
   }
   const avgDistance = distances.reduce((sum, x) => sum + x) / distances.length
-  log(`!!!!!!!! - average distance: ${avgDistance}`)
+  console.log(`!!!!!!!! - average distance: ${avgDistance}`)
   return avgDistance
 }
 
-function paintItRed() {
+function paintItRed () {
   /*
   context.fillStyle = "red"
   idealPathPixels.forEach(px => { context.fillRect(px.x, px.y, 1, 1) })
@@ -712,12 +707,42 @@ function paintItRed() {
   */
 }
 
-function checkForEnoughSquiggle() {
+function checkForEnoughSquiggle () {
   let columnsInSquiggle = 0
-  for (let i = Math.floor(leftEdge); i < Math.floor(rightEdge); i += 1) {
+  for (let i = Math.floor(leftEdge); i < Math.floor(rightEdge); i++) {
     if (squigglePixels.filter(pixel => Math.floor(pixel.x) === i).length > 0) {
       columnsInSquiggle += 1
     }
   }
   return columnsInSquiggle / (rightEdge - leftEdge) > 0.5
+}
+
+function getPuzzleData (index) {
+  // TODO: get these values from api
+  const set = [
+      {clue: "CLINTONS' KITTY", answer: "SOCKS"},
+      {clue: "MONASTERY HEAD", answer: "ABBOT"},
+      {clue: "TURKEY TOPPER", answer: "GRAVY"},
+      {clue: "CUDDLE, IN A WAY", answer: "SPOON"},
+      {clue: "5-7-5 POEM", answer: "HAIKU"},
+      {clue: "CLAMMY", answer: "MOIST"},
+      {clue: "THAT IS ... ROUGH", answer: "YIKES"},
+      {clue: "JUST PLAIN PEOPLE", answer: "FOLKS"},
+      {clue: "OF POOR QUALITY, SLANGILY", answer: "JANKY"},
+      {clue: "SOW, AS SEEDS", answer: "PLANT"},
+      {clue: "LAB WEAR", answer: "SMOCK"},
+      {clue: "CIRCULAR DINNER ORDER", answer: "PIZZA"},
+      {clue: "LEG EXERCISE", answer: "SQUAT"},
+      {clue: "THAT'S HILARIOUS", answer: "LMFAO"},
+      {clue: "THIRSTY DOG'S EMISSIONS", answer: "PANTS"},
+    ]
+  return { clue: set[index].clue, answer: set[index].answer }
+}
+
+function isMobile() {
+   if(size < 550) {
+     return true;
+   } else {
+     return false;
+   }
 }

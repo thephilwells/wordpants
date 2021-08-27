@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "description": "Word Pants",
   "main": "script.js",
-    "express": "^4.16.4",
-    "pino": "^5.14.0"
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
@@ -12,6 +10,7 @@
   "author": "Phil Wells",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "pino": "^5.14.0"
   }
 }
