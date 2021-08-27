@@ -49,6 +49,8 @@ splashCanvas.addEventListener('click', (event) => {
   buttonCanvas.style.visibility = "visible"
 }, false)
 
+document.getElementById('music').play()
+
 
 const puzzleAnswer = 'PANTS'
 
@@ -68,9 +70,10 @@ let idealPathPixels = []
 let puzzleData = getPuzzleData(puzzleNumber)
 let letterX = canvas.width / 12
 let allCollisionXs = []
-let leftEdge = canvas.width / 24
+let leftEdge = canvas.width / 16
 let rightEdge = canvas.width - leftEdge
 let halfway = canvas.width / 2
+let phoneClosenessModifier = 1
 
 redrawHeaderTemplate()
 calmJean()
@@ -216,7 +219,7 @@ function redrawBoundaries () {
     0,
     lowestPixelValue,
     canvas.width,
-    canvas.height - lowestPixelValue
+    canvas.height - highestPixelValue
   )
 
   // draw dashed waistline
@@ -264,6 +267,7 @@ window.addEventListener(
 
 // Set up touch events for mobile, etc
 canvas.addEventListener('touchstart', function (event) {
+  phoneClosenessModifier = .5
   event.preventDefault()
   if (event.target === canvas) {
     calmJean()
@@ -414,7 +418,7 @@ function handleRestart() {
 }
 
 function placeRectangle (x, y) {
-  context.fillRect(x, y, size, size)
+  context.fillRect(x, y, size * 1.5, size * 1.5)
   context.closePath()
   context.fillStyle = color
   context.fill()
@@ -431,16 +435,16 @@ async function pullUpPants () {
     placeRectangle(newPixel.x, newPixel.y)
     // console.log(`Clearing rectangle at x: ${squigglePixels[i].x - size / 2}, y: ${squigglePixels[i].y + size / 2}, size ${size * 2}x${size * 2}`)
     context.clearRect(
-      squigglePixels[i].x - size / 3,
-      squigglePixels[i].y + size / 3,
+      squigglePixels[i].x - size /2,
+      squigglePixels[i].y + size / 2,
       size * 2,
-      size * 2
+      size * 1.5
     )
     squigglePixels[i] = { x: newPixel.x, y: newPixel.y }
   }
   
   // let canvas operations finish
-  await sleep(5)
+  await sleep(8)
   
   // move the bounds of the squiggle up a bit
   highestPixelValue -= size
@@ -699,16 +703,16 @@ function calculateCloseness () {
     }
   }
   for (let j = 0; j < squigglePixels.length; j++) {
-    distances.push(
-      Math.sqrt(
+    const dist =  Math.sqrt(
         Math.pow(squigglePixels[j].x - idealPathPixels[j].x, 2) +
           Math.pow(squigglePixels[j].y - idealPathPixels[j].y, 2)
       )
-    )
+      console.log(`squiggle-x: ${squigglePixels[j].x}, squiggle-y: ${squigglePixels[j].y}, ideal-x: ${idealPathPixels[j].x}, ideal-y: ${idealPathPixels[j].y}, dist: ${dist}`)
+    distances.push(dist)
   }
   const avgDistance = distances.reduce((sum, x) => sum + x) / distances.length
   // console.log(`!!!!!!!! - average distance: ${avgDistance}`)
-  return avgDistance
+  return avgDistance * phoneClosenessModifier
 }
 
 function paintItRed () {
