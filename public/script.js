@@ -40,7 +40,7 @@ const splashImage = new Image()
 splashImage.onload = () => {
   splashContext.drawImage(splashImage, 0, 0, canvas.width, canvas.height)
 }
-splashImage.src = '/assets/wordpantssplash.png'
+splashImage.src = 'wordpantssplash.png'
 
 splashCanvas.addEventListener('click', (event) => {
   splashCanvas.style.display = "none"
@@ -146,7 +146,7 @@ function calmJean() {
   jeanImage.onload = () => {
     headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
   }
-  jeanImage.src = '/assets/BlueJeanWithEyes.png'
+  jeanImage.src = 'BlueJeanWithEyes.png'
 }
 
 function shockJean() {
@@ -155,7 +155,7 @@ function shockJean() {
   jeanImage.onload = () => {
     headerContext.drawImage(jeanImage, (headerCanvas.width - (headerCanvas.width / 4) - 2), 2, (headerCanvas.width / 4), (headerCanvas.height / .87) - (headerCanvas.height / 5))
   }
-  jeanImage.src = '/assets/BlueJeanWithBigEyes.png'
+  jeanImage.src = 'BlueJeanWithBigEyes.png'
 }
 
 function drawAnswer() {
@@ -387,7 +387,7 @@ function handleSubmit () {
     highestPixelValue = getHighestPixelValue()
     lowestPixelValue = getLowestPixelValue()
     if (checkForEnoughSquiggle()) {
-      new Audio('/assets/whistleup.wav').play()
+      new Audio('whistleup.wav').play()
       pullUpPants()
     } else {
       shockJean()
@@ -398,7 +398,7 @@ function handleSubmit () {
 }
 
 function handleRestart() {
-    new Audio('/assets/whistledown.wav').play()
+    new Audio('whistledown.wav').play()
   squigglePixels = []
   context.clearRect(0, 0, canvas.width, canvas.height)
   context.closePath()
@@ -414,42 +414,53 @@ function handleRestart() {
 }
 
 function placeRectangle (x, y) {
-  context.fillRect(x - size, y - size, size, size)
+  context.fillRect(x, y, size, size)
   context.closePath()
   context.fillStyle = color
   context.fill()
 }
 
 async function pullUpPants () {
+  // clear all pixels beneath lowest pixel on the squiggle, and redraw game board
   redrawBoundaries()
+  
+  // traverse the squiggle
   for (let i = 0; i < squigglePixels.length; i++) {
-    context.clearRect(
-      squigglePixels[i].x - size,
-      squigglePixels[i].y - size,
-      size,
-      size
-    )
     let initialPixels = { x: squigglePixels[i].x, y: squigglePixels[i].y }
-    let newPixel = { x: initialPixels.x, y: initialPixels.y - 1 }
+    let newPixel = { x: initialPixels.x, y: initialPixels.y - size }
     placeRectangle(newPixel.x, newPixel.y)
+    // console.log(`Clearing rectangle at x: ${squigglePixels[i].x - size / 2}, y: ${squigglePixels[i].y + size / 2}, size ${size * 2}x${size * 2}`)
+    context.clearRect(
+      squigglePixels[i].x - size / 3,
+      squigglePixels[i].y + size / 3,
+      size * 2,
+      size * 2
+    )
     squigglePixels[i] = { x: newPixel.x, y: newPixel.y }
   }
-  await sleep(0)
-  highestPixelValue--
-  lowestPixelValue--
-  console.log(`WAISTLINE: ${waistline} HIGHEST SQUIGGLE POINT: ${highestPixelValue}`)
+  
+  // let canvas operations finish
+  await sleep(5)
+  
+  // move the bounds of the squiggle up a bit
+  highestPixelValue -= size
+  lowestPixelValue -= size
+  
+  // debug
+  // console.log(`WAISTLINE: ${waistline} HIGHEST SQUIGGLE POINT: ${highestPixelValue}`)
+
   if (highestPixelValue <= waistline) {
     score = calculateCloseness()
     shockJean()
     if (score < 51) {
-      setHeaderText(`TIGHT PANTS!! AVERAGE CLOSENESS: ${Math.floor(score)}`)
+      setHeaderText(`TIGHT PANTS!! AVERAGE CLOSENESS: ${Math.floor(score)} PIXELS`)
       puzzleNumber += 1
       puzzleData = getPuzzleData(puzzleNumber)
       winScreen = true
       buttonContext.clearRect(buttonCanvas.width / 2, 0, buttonCanvas.width, buttonCanvas.height)
       buttonContext.fillText('NEXT', buttonCanvas.width * .75, 25)
     } else {
-      setHeaderText(`Too baggy! Average closeness: ${Math.floor(score)}. Try again!`)
+      setHeaderText(`Too baggy! Average closeness: ${Math.floor(score)} pixels. Try again!`)
     }
   } else if (collisionDetected()) {
     shockJean()
